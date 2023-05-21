@@ -18,6 +18,7 @@ class String
        explicit String() {
            m_buffer = new char[1];
            m_buffer[0] = '\0';
+           m_size = 1;
        }
         
        //Explicit constructor to only allow either empty construction, or construction of strings
@@ -61,7 +62,10 @@ class String
         //Assuming that the m_size member is greater than 0 in order to not underflow when setting the null terminator
         void clear() {
             assert(m_size > 0 && "Error! empty() requires size greater than 0"); 
-            memset(m_buffer, 0, m_size);
+            delete[] m_buffer;
+
+            m_buffer = new char[1];
+            m_size = 1;
             m_buffer[m_size-1] = '\0';
         }
        
@@ -85,6 +89,7 @@ class String
             strcpy(this->m_buffer, new_buffer);
             
             delete[]new_buffer;
+            m_size = new_size;
         }
         
         void append(const String& src) {
@@ -101,14 +106,48 @@ class String
             strcpy(m_buffer, new_buffer);
             
             delete[] new_buffer;
+            m_size = new_size;
         }
         
-        //void insert(size_t pos, const char* s) { /* ... */ }
+        void insert(size_t pos, const char* s) {
+            size_t new_size = m_size + strlen(s);
+            char* new_buffer = new char[new_size+1];
+            
+            strncpy(new_buffer, m_buffer, pos);
+            new_buffer[pos] = '\0';
+
+            strcat(new_buffer, s);
+            strcat(new_buffer, m_buffer + pos);
         
-        //void insert(size_t pos, const String& s) { /* ... */ }
+            delete[] m_buffer;
+            m_buffer = new char[new_size+1];
+            strcpy(m_buffer, new_buffer);
+            
+            m_buffer[new_size] = '\0';
+            m_size = new_size;
+        }
+
+        void insert(size_t pos, const String& s) { 
+            size_t new_size = m_size + s.m_size;
+            char* new_buffer = new char[new_size+1];
+
+            strncpy(new_buffer, m_buffer, pos);
+            new_buffer[pos] = '\0';
+
+            strcat(m_buffer, s.m_buffer);
+            strcat(new_buffer, m_buffer + pos);
+
+            delete[] m_buffer;
+            m_buffer = new char[new_size+1];
+            
+            strcpy(m_buffer, new_buffer);
+            m_buffer[new_size] = '\0';
+            m_size = new_size;
+        }
         
+        //TODO:
         //void erase(size_t pos, size_t len) { /* ... */ }
-        
+
         //size_t find(const char* s, size_t pos = 0) const { /* ... */ }
         
         //size_t find(const String& s, size_t pos = 0) const { /* ... */ }
