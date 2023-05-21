@@ -3,7 +3,10 @@
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Hello world!\n";
+
+    String str = "Hello";
+    str.append(" test");
+    std::cout << str;
 
     return 0;
 }
