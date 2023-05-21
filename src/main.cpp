@@ -1,4 +1,5 @@
 #include <iostream>
+#include "../include/Dapp_string.h"
 
 int main(int argc, char* argv[])
 {

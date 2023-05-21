@@ -6,6 +6,10 @@ project(STL_impl)
 # Add the include directory
 include_directories(include)
 
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Collect all source files
 file(GLOB SOURCES "src/*.cpp")
 

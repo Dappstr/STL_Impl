@@ -4,6 +4,7 @@
 #include <iostream>
 #include <utility> // std::move
 #include <cassert>
+#include <stdlib.h>
 
 class String
 {
@@ -46,19 +47,59 @@ class String
        }
 
         inline size_t size() { return m_size; }
-        inline bool isEmpty() { return m_size > 0 ? false : true; }
-        inline const char* begin() { return &m_buffer[0]; }
-        inline const char* end() { return &m_buffer[m_size-1]; }
+        inline bool empty() { return m_size > 0 ? false : true; }
 
         //Will zero every element in the string, but retain the size
         //Assuming that the m_size member is greater than 0 in order to not underflow when setting the null terminator
-        void empty() {
+        void clear() {
             assert(m_size > 0 && "Error! empty() requires size greater than 0"); 
             memset(m_buffer, 0, m_size);
             m_buffer[m_size-1] = '\0';
         }
-        
+       
+        inline const char* begin() { return &m_buffer[0]; }
+        inline const char* end() { return &m_buffer[m_size-1]; }
+
         //Operators
+        String& operator=(const String& rhs) {
+            if(this == &rhs) { return *this; }
+            delete[] m_buffer;
+            
+            m_size = rhs.m_size;
+            m_buffer = new char[m_size+1];
+            
+            memcpy(m_buffer, rhs.m_buffer, rhs.m_size);
+            m_buffer[m_size] = '\0'; 
+            
+            return *this;
+        }
+        
+        String& operator=(String&& rhs) {
+            if(this == &rhs) { return *this; }
+            delete[] m_buffer;
+
+            m_size = rhs.m_size;
+            strcpy(m_buffer, rhs.m_buffer);
+            
+            rhs.m_size = 0;
+            rhs.m_buffer = nullptr;
+            
+            return *this;
+        }
+
+
+        String operator+(const String& rhs) {
+            size_t size = strlen(m_buffer) + strlen(rhs.m_buffer) + 1;
+            char* new_buffer = new char[size];
+            
+            strcpy(new_buffer, m_buffer);
+            strcat(new_buffer, rhs.m_buffer);
+            
+            String new_string(new_buffer);
+            
+            delete[] new_buffer;
+            return new_string;
+        }
 
 
         ~String()
