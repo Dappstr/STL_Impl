@@ -17,9 +17,9 @@ class String
        }
 
        explicit String(const char* str)
-       :m_size(std::strlen(str)) { // Use std::strlen to clarify the scope
-           m_buffer = new char[m_size + 1]; // Allocate space for the null character
-           std::strcpy(m_buffer, str); // Use std::strcpy to clarify the scope
+       :m_size(strlen(str)) { 
+           m_buffer = new char[m_size + 1];
+           strcpy(m_buffer, str);
        }
 
        ~String()
