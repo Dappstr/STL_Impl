@@ -1,7 +1,7 @@
 #pragma once 
 
-#include <cstring> // This imports strlen and strcpy functions
 #include <iostream>
+#include <cstring> // This imports strlen and strcpy functions
 #include <utility> // std::move
 #include <cassert>
 #include <stdlib.h>
@@ -22,15 +22,23 @@ class String
         
        //Explicit constructor to only allow either empty construction, or construction of strings
        //This disallows users from passing something like an integer or double as a constructor parameter
-       explicit String(const char* str)
+       String(const char* str)
            :m_size(strlen(str)) { 
            m_buffer = new char[m_size + 1];
            strcpy(m_buffer, str);
        }
 
+       String(std::initializer_list<char> init_list)
+           :m_size (init_list.size()) {
+               m_buffer = new char[m_size];
+               std::copy(init_list.begin(), init_list.end(), m_buffer); 
+               m_buffer[m_size] = '\0';
+           }
+
        //Copy constructor
        String(const String& src)
            :m_size(src.m_size) {
+           m_buffer = new char[m_size];
            strcpy(m_buffer, src.m_buffer);
        }
 
@@ -63,23 +71,50 @@ class String
         //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
         inline const char* at(int indx) noexcept(noexcept(indx < m_size)) { return &m_buffer[indx]; }
         
-        //TODO:
-        void append(const char* s) { /* ... */ }
+        void append(const char* s) {
+            size_t new_size = m_size + strlen(s) + 1;
+            char* new_buffer = new char[new_size+1];
+            
+            strcpy(new_buffer, m_buffer);
+            strcat(new_buffer, s);
+            
+            new_buffer[new_size] = '\0';
+            
+            delete[] this->m_buffer;
+            m_buffer = new char[new_size];
+            strcpy(this->m_buffer, new_buffer);
+            
+            delete[]new_buffer;
+        }
         
-        void append(const String& s) { /* ... */ }
-        
-        void insert(size_t pos, const char* s) { /* ... */ }
-        
-        void insert(size_t pos, const String& s) { /* ... */ }
-        
-        void erase(size_t pos, size_t len) { /* ... */ }
-        
-        size_t find(const char* s, size_t pos = 0) const { /* ... */ }
-        
-        size_t find(const String& s, size_t pos = 0) const { /* ... */ }
+        void append(const String& src) {
+            size_t new_size = m_size + strlen(src.m_buffer);
+            char* new_buffer= new char[new_size+1];
+            
+            strcpy(new_buffer, m_buffer);
+            strcat(new_buffer, src.m_buffer);
+            
+            new_buffer[new_size] = '\0';
 
-        String substr(size_t pos = 0, size_t len = npos) const { /* ... */ }
+            delete[] this->m_buffer;
+            this->m_buffer = new char[m_size+1];
+            strcpy(m_buffer, new_buffer);
+            
+            delete[] new_buffer;
+        }
+        
+        //void insert(size_t pos, const char* s) { /* ... */ }
+        
+        //void insert(size_t pos, const String& s) { /* ... */ }
+        
+        //void erase(size_t pos, size_t len) { /* ... */ }
+        
+        //size_t find(const char* s, size_t pos = 0) const { /* ... */ }
+        
+        //size_t find(const String& s, size_t pos = 0) const { /* ... */ }
 
+        //String substr(size_t pos = 0, size_t len = npos) const { /* ... */ }
+        
 
         //Operators
         String& operator=(const String& rhs) {
