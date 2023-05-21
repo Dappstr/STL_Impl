@@ -11,7 +11,8 @@ class String
     private:
         size_t m_size = 0;
         char* m_buffer = nullptr;
-    
+        static const size_t npos = -1;
+
     public:
         //TODO
         // Implement core string functionality (constructors, destructors)
@@ -166,9 +167,18 @@ class String
         
         //TODO:
 
-        //size_t find(const char* s, size_t pos = 0) const { /* ... */ }
+        size_t find(const char* s, size_t pos = 0) const {
+            if(strlen(s) > m_size) {
+                return npos; 
+            }
+        }
         
-        //size_t find(const String& s, size_t pos = 0) const { /* ... */ }
+        size_t find(const String& s, size_t pos = 0) const {
+            if(m_size < s.m_size) {
+                return npos;
+            }
+
+        }
 
         //String substr(size_t pos = 0, size_t len = npos) const { /* ... */ }
         
