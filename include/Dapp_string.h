@@ -57,8 +57,29 @@ class String
             m_buffer[m_size-1] = '\0';
         }
        
-        inline const char* begin() { return &m_buffer[0]; }
-        inline const char* end() { return &m_buffer[m_size-1]; }
+        inline const char* begin() { return &m_buffer[0]; } // Will point to beginning of buffer
+        inline const char* end() { return &m_buffer[m_size-1]; } // Will point to end of buffer
+
+        //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
+        inline const char* at(int indx) noexcept(noexcept(indx < m_size)) { return &m_buffer[indx]; }
+        
+        //TODO:
+        void append(const char* s) { /* ... */ }
+        
+        void append(const String& s) { /* ... */ }
+        
+        void insert(size_t pos, const char* s) { /* ... */ }
+        
+        void insert(size_t pos, const String& s) { /* ... */ }
+        
+        void erase(size_t pos, size_t len) { /* ... */ }
+        
+        size_t find(const char* s, size_t pos = 0) const { /* ... */ }
+        
+        size_t find(const String& s, size_t pos = 0) const { /* ... */ }
+
+        String substr(size_t pos = 0, size_t len = npos) const { /* ... */ }
+
 
         //Operators
         String& operator=(const String& rhs) {
