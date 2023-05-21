@@ -1,8 +1,8 @@
 template <typename iter, typename func>
-func* for_each(iter start, iter end, func func_ptr) {
+func for_each(iter start, iter end, func fn) {
     for(; start != end; ++start) {
-        func_ptr(*start);
+        fn(*start);
     }
-    func_ptr;
+    return fn;
 }
 
