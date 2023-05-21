@@ -9,7 +9,7 @@
 class String
 {
     private:
-        int m_size = 0;
+        size_t m_size = 0;
         char* m_buffer = nullptr;
     
     public:
@@ -87,7 +87,6 @@ class String
             return *this;
         }
 
-
         String operator+(const String& rhs) {
             size_t size = strlen(m_buffer) + strlen(rhs.m_buffer) + 1;
             char* new_buffer = new char[size];
@@ -101,7 +100,16 @@ class String
             return new_string;
         }
 
+        char& operator[] (size_t indx) noexcept(noexcept(indx < this->m_size)) {
+            assert(indx < this->m_size && "Index must be within range\n");
+            return m_buffer[indx];
+        }
 
+        friend std::ostream& operator << (std::ostream& out, const String src) {
+            out << src.m_buffer;
+            return out;
+        }
+        
         ~String()
         {
            m_size = 0;
