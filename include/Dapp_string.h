@@ -200,8 +200,19 @@ class String
             return *this;
         }
 
+        String operator+(const char* rhs) {
+            size_t new_size = m_size + strlen(rhs) + 1;
+            char* new_buffer = new char[new_size];
+            
+            strcpy(new_buffer, this->m_buffer);
+            strcat(new_buffer, rhs);
+            
+            String new_str(new_buffer);
+            return new_str;
+        }
+
         String operator+(const String& rhs) {
-            size_t size = strlen(m_buffer) + strlen(rhs.m_buffer) + 1;
+            size_t size = m_size + rhs.m_size + 1;
             char* new_buffer = new char[size];
             
             strcpy(new_buffer, m_buffer);
