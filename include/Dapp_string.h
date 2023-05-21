@@ -145,8 +145,26 @@ class String
             m_size = new_size;
         }
         
+        void erase(size_t pos, size_t len) {
+            assert(pos + len <= m_size && "Length must be less than or equal to the string length");
+            
+            size_t new_size = m_size - len;
+            char* new_buffer = new char[new_size+1];
+            
+            strncpy(new_buffer, m_buffer, pos); // Copy characters up to (not including) `pos`
+            strcpy(new_buffer + pos, m_buffer + pos  + len); //Then copy the characters starting at pos, then up to length
+
+            delete[] m_buffer;
+            m_size = new_size;
+            strcpy(m_buffer, new_buffer);
+            m_buffer[m_size] = '\0';
+        }
+
+        void erase() {
+            clear();
+        }
+        
         //TODO:
-        //void erase(size_t pos, size_t len) { /* ... */ }
 
         //size_t find(const char* s, size_t pos = 0) const { /* ... */ }
         
