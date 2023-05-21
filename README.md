@@ -6,5 +6,6 @@ The way I've written things may (and probably will) be less efficient than what 
 
 This is my own personal project.
 
+
 # TODO:
-    The first ones I'll be doing are string, vector, and array, since they're all fairly similar.
+The first ones I'll be doing are string, vector, and array, since they're all fairly similar.
