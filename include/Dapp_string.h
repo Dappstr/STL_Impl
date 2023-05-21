@@ -1,7 +1,9 @@
 #pragma once 
+
 #include <cstring> // This imports strlen and strcpy functions
 #include <iostream>
 #include <utility> // std::move
+#include <cassert>
 
 class String
 {
@@ -43,12 +45,26 @@ class String
            src.m_size = 0;
        }
 
-       ~String()
-       {
+        inline size_t size() { return m_size; }
+        inline bool isEmpty() { return m_size > 0 ? false : true; }
+        inline const char* begin() { return &m_buffer[0]; }
+        inline const char* end() { return &m_buffer[m_size-1]; }
+
+        //Will zero every element in the string, but retain the size
+        //Assuming that the m_size member is greater than 0 in order to not underflow when setting the null terminator
+        void empty() {
+            assert(m_size > 0 && "Error! empty() requires size greater than 0"); 
+            memset(m_buffer, 0, m_size);
+            m_buffer[m_size-1] = '\0';
+        }
+        
+        //Operators
+
+
+        ~String()
+        {
            m_size = 0;
            delete[] m_buffer;
-       }
+        }
 
-        // Implement operators
-        // Implement helper functions
 };
