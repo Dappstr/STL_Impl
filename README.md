@@ -8,5 +8,10 @@ String
 
 for_each
 
+# IN PROGRESS:
+Vector
+
+Stack
+
 # TODO:
-Vector, Array, Stack
+Array
