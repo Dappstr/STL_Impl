@@ -1,6 +1,6 @@
 #include <iostream>
-#include "../include/Dapp_string.h"
-#include "../include/for_each.hpp"
+#include "../include/Dapp_string.hpp"
+#include "../include/Dapp_for_each.hpp"
 
 int main(int argc, char* argv[])
 {
