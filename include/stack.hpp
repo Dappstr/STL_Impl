@@ -69,11 +69,13 @@ class Stack
 
         Stack(const Stack& src) {
             this->m_size = src.m_size;
+            this->m_buffer = new [m_size];
             memcpy(this->m_buffer, src.m_buffer, m_size);
         }
 
         Stack(Stack&& src) {
             this->m_size = src.m_size;
+            this->m_buffer = new [m_size];
             memcpy(this->m_buffer, src.m_buffer, m_size);
            
             delete[] src.m_buffer;
@@ -84,6 +86,7 @@ class Stack
         //Operators
         Stack& operator=(const Stack& src) {
             this->m_size=src.m_size;    
+            
             memcpy(this->m_buffer, src.m_buffer, m_size);
         }
 
@@ -97,8 +100,8 @@ class Stack
 
         }
 
-        /*
-        friend std::ostream& operator<<(std::ostream& out, C<T>& c) {
+        
+        friend std::ostream& operator<<(std::ostream& out, Stack<T, N>& c) {
             for(size_t i = 0; i < c.m_size; ++i) {
                 out << '[';
                 if(i == c.m_size - 1) { out << c.m_buffer[i] << ']'; }
@@ -106,7 +109,7 @@ class Stack
             }
             return out;
         }
-        */
+        
 
         ~Stack() {
             delete[] m_buffer;
