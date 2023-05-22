@@ -5,6 +5,7 @@
 #include <utility> // std::move
 #include <cassert>
 #include <stdlib.h>
+#include <mutex>
 
 class String
 {
@@ -12,6 +13,7 @@ class String
         size_t m_size = 0;
         char* m_buffer = nullptr;
         static const size_t npos = -1;
+        inline static std::mutex mut;
 
     public:
         //TODO
@@ -77,6 +79,8 @@ class String
         inline const char* at(int indx) noexcept(noexcept(indx < m_size)) { return &m_buffer[indx]; }
         
         void append(const char* s) {
+            std::lock_guard<std::mutex> lock(mut);
+            
             size_t new_size = m_size + strlen(s) + 1;
             char* new_buffer = new char[new_size+1];
             
@@ -94,6 +98,8 @@ class String
         }
         
         void append(const String& src) {
+            std::lock_guard<std::mutex> lock(mut);
+
             size_t new_size = m_size + strlen(src.m_buffer);
             char* new_buffer= new char[new_size+1];
             
@@ -111,6 +117,8 @@ class String
         }
         
         void insert(size_t pos, const char* s) {
+            std::lock_guard<std::mutex> lock(mut);
+            
             size_t new_size = m_size + strlen(s);
             char* new_buffer = new char[new_size+1];
             
@@ -129,6 +137,8 @@ class String
         }
 
         void insert(size_t pos, const String& s) { 
+            std::lock_guard<std::mutex> lock(mut);
+
             size_t new_size = m_size + s.m_size;
             char* new_buffer = new char[new_size+1];
 
@@ -243,7 +253,23 @@ class String
             out << src.m_buffer;
             return out;
         }
-        
+       
+        void* operator new(size_t size) {
+            mut.lock();
+
+            void* buffer = calloc(size, 1);
+            mut.unlock();
+
+            if(!buffer) { throw std::bad_alloc(); }
+            return buffer;
+        }
+
+        void operator delete(void* ptr) noexcept {
+            mut.lock();
+            free(ptr);
+            mut.unlock();
+        }
+
         ~String()
         {
            m_size = 0;
