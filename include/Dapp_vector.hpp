@@ -6,7 +6,7 @@ template <typename T, size_t N = 0>
 class Vector
 {
     private:
-        size_t m_size = N;
+        size_t m_size = 0;
         size_t m_cap = N;
         T* m_buffer = nullptr;
 
@@ -25,12 +25,12 @@ class Vector
         const size_t capacity() const {return m_cap; } // Will return maximum current capacity
         const bool empty() { return m_size > 0; }
 
-        auto* begin() {
+        auto* begin() const noexcept(noexcept(this->m_size > 0)) {
             assert(std::addressof(m_buffer != NULL));
             return &m_buffer[0];
         }
         
-        auto* end() {
+        auto* end() noexcept(noexcept(this->m_size > 0)) {
             assert(m_size >= 0);
             return &m_buffer[m_size-1];
         }
@@ -41,6 +41,9 @@ class Vector
                 out << vec.m_buffer[i];
             }
             return out;
+        }
+        T operator[](size_t indx) {
+            return m_buffer[indx];
         }
 
         ~Vector() {
