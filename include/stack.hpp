@@ -3,6 +3,7 @@ Manual implementation of a stack without the use of a container such as std::vec
 WIP
 */
 
+#include <cstring>
 #include <iostream>
 
 template <typename T>
@@ -65,33 +66,39 @@ class Stack
             m_buffer[m_size-1] = val;
         }
 
-        size_t size() { return m_size; }
 
+        Stack(const Stack& src) {
+            this->m_size = src.m_size;
+            memcpy(this->m_buffer, src.m_buffer, m_size);
+        }
 
-        //default for now, implementing later    
-        Stack(const Stack& src) = default;
-
-        /*
-        Finish later
-        Stack(const Stack& src) noexcept(noexcept(m_size )){
-        }*/
-
-         //Default for now, implementing later    
-        Stack(Stack&& src) = default;
+        Stack(Stack&& src) {
+            this->m_size = src.m_size;
+            memcpy(this->m_buffer, src.m_buffer, m_size);
+           
+            delete[] src.m_buffer;
+            src.m_buffer = nullptr;
+            src.m_size = 0;
+        }
 
         //Operators
-        //Default for now, implementing later
-        Stack& operator=(const Stack& src) = default;
+        Stack& operator=(const Stack& src) {
+            this->m_size=src.m_size;    
+            memcpy(this->m_buffer, src.m_buffer, m_size);
+        }
+
+        Stack& operator=(Stack&& src) {
+            this->m_size=src.m_size;
+            memcpy(this->m_buffer, src.m_buffer, m_size);
+            
+            delete[] src.m_buffer;
+            src.m_buffer = nullptr;
+            src.m_size = 0;
+
+        }
 
         /*
-        Stack& operator=(const Stack& src) {
-            std::copy(src.m_stack.begin(), src.m_stack.end(), std::back_inserter(m_stack));
-        }*/
-
-        //Default for now, implementing later
-        Stack& operator=(Stack&& src) = default;
-
-        friend std::ostream& operator<<(std::ostream& out, C<T, N>& c) {
+        friend std::ostream& operator<<(std::ostream& out, C<T>& c) {
             for(size_t i = 0; i < c.m_size; ++i) {
                 out << '[';
                 if(i == c.m_size - 1) { out << c.m_buffer[i] << ']'; }
@@ -99,6 +106,7 @@ class Stack
             }
             return out;
         }
+        */
 
         ~Stack() {
             delete[] m_buffer;
