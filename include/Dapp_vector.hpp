@@ -12,6 +12,7 @@ class Vector
         size_t m_size = 0;
         size_t m_cap = N;
         T* m_buffer = nullptr;
+        std::mutex mtx {};
 
     public:
 
@@ -39,6 +40,7 @@ class Vector
     
         //Append a value to the buffer
         void append(const T& val) {
+            mtx.lock();
             if (m_size == m_cap) {
                 T new_buff = new T[m_size + 1];
                 memcpy(new_buff, m_buffer, m_size);
@@ -50,6 +52,7 @@ class Vector
             else {
                 m_buffer[m_size-1] = val;
             }
+            mtx.unlock();
         }
     
         //Point towards the beginning of the buffer assuming that the buffer has items.
