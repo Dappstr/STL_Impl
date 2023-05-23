@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <stdlib.h>
@@ -63,7 +64,6 @@ class Vector
             }
         }
 
-
         auto pop() {
             assert(m_size > 0 && "Out of index error!\n");
             T popped = m_buffer[m_size-1];            
@@ -78,6 +78,23 @@ class Vector
             return popped;
         }
 
+        void shrink_to_fit(int n){
+            assert(n > 0 && "Shrink value must be greater than 0");
+            T new_buff = new T[n];
+            memcpy(new_buff, this->m_buffer, n);
+            delete[] this->m_buffer;
+            this->m_buffer = new_buff;
+            this->m_size = n;
+        }
+
+        Vector<T, N> clear() {
+            Vector<T, m_size> ret_vec;
+            memcpy(ret_vec.m_buffer, this->m_buffer, this->m_size);
+            ret_vec.m_size = this->m_size;
+            delete[] this->m_buffer;
+            this->m_buffer = 0;
+            return ret_vec;
+        }
         // Operators
         friend std::ostream& operator << (std::ostream& out, Vector<T, N>& vec ) {
             for(int i = 0; i < vec.m_size; ++i) {
@@ -87,6 +104,15 @@ class Vector
         }
         T operator[](size_t indx) {
             return m_buffer[indx];
+        }
+
+        Vector<T, N> operator+ (const Vector<T,N>& rhs) {
+            Vector<T, N> new_vec;
+            for(size_t i = 0; i < N; ++i) {
+                new_vec.m_buffer[i] = this->m_buffer[i] + rhs.m_buffer[i];
+            }
+
+            return new_vec;
         }
 
         ~Vector() {

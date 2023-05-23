@@ -6,11 +6,10 @@
 int main(int argc, char* argv[])
 {
     
-    Vector<int, 5> vec = {1, 2, 3, 4, 5};
-    vec.pop();
-    const int lval = 6;
-    vec.append(lval);
+    Vector<int, 5> vec1 = {1, 2, 3, 4, 5};
+    Vector<int, 5> vec2 = {6, 7, 8, 9, 10};
 
-    std::cout << vec;
+    Vector<int, 5> vec3 = vec1 + vec2;
+
     return 0;
 }
