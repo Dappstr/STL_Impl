@@ -37,6 +37,7 @@ class Vector
          
         // Utility functions
     
+        //Append a value to the buffer
         void append(const T& val) {
             if (m_size == m_cap) {
                 T new_buff = new T[m_size + 1];
@@ -50,12 +51,17 @@ class Vector
                 m_buffer[m_size-1] = val;
             }
         }
+    
+        //Point towards the beginning of the buffer assuming that the buffer has items.
         auto* begin() const noexcept(noexcept(this->m_size > 0)) {
             assert(m_buffer != NULL);
             return &m_buffer[0];
         }
+    
+        // Return the capacity of the buffer
         const size_t capacity() const {return m_cap; } // Will return maximum current capacity
     
+        // Will clear the contents of the buffer and return a buffer with the previous contents
         Vector<T, N> clear() {
             Vector<T, m_size> ret_vec;
             memcpy(ret_vec.m_buffer, this->m_buffer, this->m_size);
@@ -65,13 +71,16 @@ class Vector
             return ret_vec;
         }
     
+        // Returns whether the buffer is empty or not
         const bool empty() { return m_size > 0; }
 
+        // Returns a pointer to the end of the buffer
         auto* end() noexcept(noexcept(this->m_size > 0)) {
             assert(m_size >= 0);
             return &m_buffer[m_size-1];
         }
        
+        // Returns the last element and then reduces the size while preserving the capacity
         auto pop() {
             assert(m_size > 0 && "Out of index error!\n");
             T popped = m_buffer[m_size-1];            
@@ -86,8 +95,10 @@ class Vector
             return popped;
         }
 
+        // Will shrink the array down to size assuming n is greater than 0 as well as being lower than the current size while preserving the capacity.
         void shrink_to_fit(int n){
             assert(n > 0 && "Shrink value must be greater than 0");
+            assert(n < this->m_size && "Shrink value must be less than current size");
             T new_buff = new T[n];
             memcpy(new_buff, this->m_buffer, n);
             delete[] this->m_buffer;
@@ -95,6 +106,7 @@ class Vector
             this->m_size = n;
         }
  
+        // Returns size of the buffer
         const size_t size() const { return m_size; } // Will return current size
     
         // Operators
@@ -104,6 +116,7 @@ class Vector
             }
             return out;
         }
+    
         T operator[](size_t indx) {
             return m_buffer[indx];
         }
