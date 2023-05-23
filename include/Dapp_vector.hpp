@@ -36,20 +36,7 @@ class Vector
         }
          
         // Utility functions
-        const size_t size() const { return m_size; } // Will return current size
-        const size_t capacity() const {return m_cap; } // Will return maximum current capacity
-        const bool empty() { return m_size > 0; }
-
-        auto* begin() const noexcept(noexcept(this->m_size > 0)) {
-            assert(m_buffer != NULL);
-            return &m_buffer[0];
-        }
-        
-        auto* end() noexcept(noexcept(this->m_size > 0)) {
-            assert(m_size >= 0);
-            return &m_buffer[m_size-1];
-        }
-       
+    
         void append(const T& val) {
             if (m_size == m_cap) {
                 T new_buff = new T[m_size + 1];
@@ -63,7 +50,28 @@ class Vector
                 m_buffer[m_size-1] = val;
             }
         }
+        auto* begin() const noexcept(noexcept(this->m_size > 0)) {
+            assert(m_buffer != NULL);
+            return &m_buffer[0];
+        }
+        const size_t capacity() const {return m_cap; } // Will return maximum current capacity
+    
+        Vector<T, N> clear() {
+            Vector<T, m_size> ret_vec;
+            memcpy(ret_vec.m_buffer, this->m_buffer, this->m_size);
+            ret_vec.m_size = this->m_size;
+            delete[] this->m_buffer;
+            this->m_buffer = 0;
+            return ret_vec;
+        }
+    
+        const bool empty() { return m_size > 0; }
 
+        auto* end() noexcept(noexcept(this->m_size > 0)) {
+            assert(m_size >= 0);
+            return &m_buffer[m_size-1];
+        }
+       
         auto pop() {
             assert(m_size > 0 && "Out of index error!\n");
             T popped = m_buffer[m_size-1];            
@@ -86,15 +94,9 @@ class Vector
             this->m_buffer = new_buff;
             this->m_size = n;
         }
-
-        Vector<T, N> clear() {
-            Vector<T, m_size> ret_vec;
-            memcpy(ret_vec.m_buffer, this->m_buffer, this->m_size);
-            ret_vec.m_size = this->m_size;
-            delete[] this->m_buffer;
-            this->m_buffer = 0;
-            return ret_vec;
-        }
+ 
+        const size_t size() const { return m_size; } // Will return current size
+    
         // Operators
         friend std::ostream& operator << (std::ostream& out, Vector<T, N>& vec ) {
             for(int i = 0; i < vec.m_size; ++i) {
