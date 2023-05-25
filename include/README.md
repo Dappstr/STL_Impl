@@ -4,7 +4,7 @@ String: **Done**
 
 Stack: **Finishing**
 
-Vector: **Not Started**
+Vector: **Nearly Finished**
 
 Array: **Not Started**
 
