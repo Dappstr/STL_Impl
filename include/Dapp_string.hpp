@@ -73,7 +73,7 @@ class String
         }
        
         inline const char* begin() { return &m_buffer[0]; } // Will point to beginning of buffer
-        inline const char* end() { return &m_buffer[m_size]; } // Will point to end of buffer
+        inline const char* end() { return &m_buffer[m_size]; } // Will point to end of buffer (null terminator)
 
         //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
         inline const char* at(int indx) noexcept(noexcept(indx < m_size)) { return &m_buffer[indx]; }
@@ -174,10 +174,16 @@ class String
         void erase() {
             clear();
         }
-        
+       /* 
         size_t find(const char* s, size_t pos = 0) const {
             if(strlen(s) > m_size) {
                 return npos; 
+            }
+
+            if(pos > 0) {
+                for(int i = pos; i < strlen(m_buffer); ++i) {
+                    if ()
+                }
             }
         }
         
@@ -185,13 +191,24 @@ class String
             if(m_size < s.m_size) {
                 return npos;
             }
-            
-            for(int i = 0; i < strlen(m_buffer); ++i) {
 
+            char first_char = s.
+            for(int i = 0; i < strlen(m_buffer); ++i) {
+            
             }
         }
+    */
+        String substr(size_t pos = 0, size_t len = npos) const {
+            assert(pos <= this->m_size && " substr pos cannot be greater than size");
+            
+            char* sub_str = new char [len+1];
+            sub_str = (char*)memcpy(sub_str, this->m_buffer+pos, len);
+            sub_str[len] = '\0';
 
-        String substr(size_t pos = 0, size_t len = npos) const { /* ... */ }
+            String ret_str(sub_str);
+            delete[] sub_str;
+            return ret_str;
+        }
         
 
         //Operators

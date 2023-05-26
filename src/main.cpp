@@ -5,11 +5,10 @@
 
 int main(int argc, char* argv[])
 {
+    String str  = "Hello ther";    
+    String str2 = str.substr(0, 5);
     
-    Vector<int, 5> vec1 = {1, 2, 3, 4, 5};
-    Vector<int, 5> vec2 = {6, 7, 8, 9, 10};
-
-    Vector<int, 5> vec3 = vec1 + vec2;
+    std::cout << str2;
 
     return 0;
 }
