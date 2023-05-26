@@ -55,6 +55,17 @@ class Vector
             mtx.unlock();
         }
     
+        // Return the value at the given index
+        T at(size_t indx) {
+            assert(indx <= m_size);
+            return *(&m_buffer[indx]);
+        }
+
+        auto address_of(int indx) {
+            assert(indx <= m_size); 
+            return std::addressof(m_buffer[indx]);
+        }
+
         //Point towards the beginning of the buffer assuming that the buffer has items.
         auto* begin() const noexcept(noexcept(this->m_size > 0)) {
             assert(m_buffer != NULL);
