@@ -2,9 +2,11 @@
 
 String: **Done**
 
-Stack: **Finishing**
+Stack: **Nearly Finished**
 
 Vector: **Nearly Finished**
+
+Linked List: **In Progress**
 
 Array: **Not Started**
 
