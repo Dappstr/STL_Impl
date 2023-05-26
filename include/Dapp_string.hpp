@@ -175,9 +175,7 @@ class String
             clear();
         }
         
-        //TODO:
-
-        /*size_t find(const char* s, size_t pos = 0) const {
+        size_t find(const char* s, size_t pos = 0) const {
             if(strlen(s) > m_size) {
                 return npos; 
             }
@@ -187,10 +185,13 @@ class String
             if(m_size < s.m_size) {
                 return npos;
             }
+            
+            for(int i = 0; i < strlen(m_buffer); ++i) {
 
-        }*/
+            }
+        }
 
-        //String substr(size_t pos = 0, size_t len = npos) const { /* ... */ }
+        String substr(size_t pos = 0, size_t len = npos) const { /* ... */ }
         
 
         //Operators
