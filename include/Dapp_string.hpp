@@ -320,8 +320,7 @@ size_t find(const char* s, size_t pos = 0) const {
             mut.unlock();
         }
 
-           m_size = 0;
-           delete[] m_buffer;
+        ~String() {
            m_size = 0;
            delete[] m_buffer;
         }
