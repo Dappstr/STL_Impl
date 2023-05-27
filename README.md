@@ -8,6 +8,9 @@ String
 
 for_each
 
+copy
+
+
 # IN PROGRESS:
 Vector
 
