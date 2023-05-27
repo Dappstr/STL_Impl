@@ -175,7 +175,7 @@ class String
             clear();
         }
 
-	   size_t find(const String& s, size_t pos = 0) const {
+	  size_t find(const String& s, size_t pos = 0) const {
             if (m_size < s.m_size) {
                 return npos;
             }
@@ -237,6 +237,8 @@ class String
 
         //Operators
         String& operator=(const String& rhs) {
+            std::lock_guard<std::mutex> lock(mut);
+
             if(this == &rhs) { return *this; }
             delete[] m_buffer;
             
@@ -250,6 +252,8 @@ class String
         }
         
         String& operator=(String&& rhs) {
+            std::lock_guard<std::mutex> lock(mut); 
+
             if(this == &rhs) { return *this; }
             delete[] m_buffer;
 
@@ -292,15 +296,15 @@ class String
         }
 
         friend std::ostream& operator << (std::ostream& out, const String src) {
+            std::lock_guard<std::mutex> lock(mut);
             out << src.m_buffer;
             return out;
         }
        
         void* operator new(size_t size) {
-            mut.lock();
+            std::lock_guard<std::mutex> lock(m: mut);
 
             void* buffer = calloc(size, 1);
-            mut.unlock();
 
             if(!buffer) { throw std::bad_alloc(); }
             return buffer;
