@@ -32,10 +32,10 @@ class String
            strcpy(m_buffer, str);
        }
 
+       String(std::initializer_list<char> init_list)
+           :m_size (init_list.size()) {
                m_buffer = new char[m_size];
                std::copy(init_list.begin(), init_list.end(), m_buffer); 
-            strcat(new_buffer, src.m_buffer);
-            
                m_buffer[m_size] = '\0';
            }
 
@@ -104,10 +104,10 @@ class String
             char* new_buffer= new char[new_size+1];
             
             strcpy(new_buffer, m_buffer);
+            strcat(new_buffer, src.m_buffer);
+            
             new_buffer[new_size] = '\0';
 
-size_t find(const char* s, size_t pos = 0) const {
-        if (s == nullptr) {
             delete[] this->m_buffer;
             this->m_buffer = new char[m_size+1];
             strcpy(m_buffer, new_buffer);
@@ -174,54 +174,46 @@ size_t find(const char* s, size_t pos = 0) const {
         void erase() {
             clear();
         }
-       
-       
-            return npos;
-        }
-            m_size = rhs.m_size;
-            m_buffer = new char[m_size+1];
-        
-        size_t len_s = strlen(s);
 
-        if (len_s > m_size) {
-            return npos;
-        }
-        
-        char first_char = s[0];
-
-        for (size_t i = pos; i < m_size; ++i) {
-            if (m_buffer[i] == first_char) {
-                
-                char* str_cmp = new char[len_s + 1];
-                strncpy(str_cmp, this->m_buffer + i, len_s);
-                str_cmp[len_s] = '\0';
-                
-                if (strcmp(str_cmp, s) == 0) {
-                    delete[] str_cmp;
-                    return i;
-                }
-
-                delete[] str_cmp;
-            }
-        }
-
-        return npos;
-    }
-
-        size_t find(const String& s, size_t pos = 0) const {
-            if(m_size < s.m_size) {
+	   size_t find(const String& s, size_t pos = 0) const {
+            if (m_size < s.m_size) {
                 return npos;
             }
-            
-            if(pos > 0) {
+
+            if (pos < m_size) {
                 char first_char = s.m_buffer[0];
 
-                for(int i = 0; i < m_size; ++i) {
-                    if(m_buffer[i] == first_char) {
+                for (size_t i = pos; i < m_size; ++i) {
+                    if (m_buffer[i] == first_char) {
                         String str_cmp; // String used for comparison
-                        strncpy(str_cmp.m_buffer, this->m_buffer+i, s.m_size);
-                    
-                        if(strcmp(str_cmp.m_buffer, s.m_buffer) == 0) {
+                        strncpy(str_cmp.m_buffer, this->m_buffer + i, s.m_size);
+                        str_cmp.m_buffer[s.m_size] = '\0';
+
+                        if (strcmp(str_cmp.m_buffer, s.m_buffer) == 0) {
+                            return i;
+                        }
+                    }
+                }
+            }
+            return npos;
+        }
+
+        size_t find(const char* s, size_t pos = 0) const {
+            size_t s_len = strlen(s);
+
+            if (m_size < s_len) {
+                return npos;
+            }
+
+            if (pos < m_size) {
+                char first_char = s[0];
+                for (size_t i = pos; i < m_size; ++i) {
+                    if (m_buffer[i] == first_char) {
+                        char str_cmp[s_len + 1]; // Char array used for comparison
+                        strncpy(str_cmp, this->m_buffer + i, s_len);
+                        str_cmp[s_len] = '\0';
+
+                        if (strcmp(str_cmp, s) == 0) {
                             return i;
                         }
                     }
@@ -248,10 +240,10 @@ size_t find(const char* s, size_t pos = 0) const {
             if(this == &rhs) { return *this; }
             delete[] m_buffer;
             
+            m_size = rhs.m_size;
+            m_buffer = new char[m_size+1];
             
             memcpy(m_buffer, rhs.m_buffer, rhs.m_size);
-        ~String()
-        {
             m_buffer[m_size] = '\0'; 
             
             return *this;
@@ -320,7 +312,8 @@ size_t find(const char* s, size_t pos = 0) const {
             mut.unlock();
         }
 
-        ~String() {
+        ~String()
+        {
            m_size = 0;
            delete[] m_buffer;
         }
