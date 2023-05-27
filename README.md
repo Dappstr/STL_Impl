@@ -10,9 +10,9 @@ for_each
 
 copy
 
+Vector
 
 # IN PROGRESS:
-Vector
 
 Stack
 
