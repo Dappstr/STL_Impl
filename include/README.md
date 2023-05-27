@@ -11,3 +11,5 @@ Linked List: **In Progress**
 Array: **Not Started**
 
 for_each: **Done**
+
+copy: **Done**
