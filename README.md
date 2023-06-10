@@ -16,5 +16,7 @@ Vector
 
 Stack
 
+Smart_pointer
+
 # TODO:
 Array
