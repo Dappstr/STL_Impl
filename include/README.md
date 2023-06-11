@@ -6,7 +6,7 @@ Stack: **Nearly Finished**
 
 Vector: **Nearly Finished**
 
-Linked List: **In Progress**
+Linked List: **Done**
 
 Array: **Not Started**
 
