@@ -12,6 +12,8 @@ copy
 
 Vector
 
+Linked_list
+
 # IN PROGRESS:
 
 Stack
