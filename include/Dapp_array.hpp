@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <initializer_list>
 #include <type_traits>
@@ -11,8 +12,7 @@ class Array
 
     public:
         Array(std::initializer_list<T> lst)
-          :m_size(lst.size())
-           {
+          :m_size(lst.size()) {
              m_buffer = new T[m_size];
 
              for(size_t i = 0; i < m_size; ++i) {
@@ -24,4 +24,11 @@ class Array
                 m_buffer[m_size] = '\0';
              }
            }
+
+        //Utility functions
+        T at(size_t indx) noexcept(noexcept(indx > -1)) {
+            assert(indx < m_size);
+            
+            return m_buffer[indx];
+        }
 };
