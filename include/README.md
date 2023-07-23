@@ -8,7 +8,7 @@ Vector: **Nearly Finished**
 
 Linked List: **Done**
 
-Array: **Not Started**
+Array: **In Progress**
 
 for_each: **Done**
 
