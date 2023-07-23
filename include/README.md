@@ -13,3 +13,7 @@ Array: **Not Started**
 for_each: **Done**
 
 copy: **Done**
+
+Linked List: **Done**
+
+Doubly Linked List: **Done**
