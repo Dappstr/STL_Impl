@@ -4,7 +4,7 @@ String: **Done**
 
 Stack: **Nearly Finished**
 
-Vector: **Nearly Finished**
+Vector: **In testing**
 
 Linked List: **Done**
 
