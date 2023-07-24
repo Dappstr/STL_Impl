@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <stdlib.h>
+#include <mutex>
 
 template <typename T, size_t N = 0>
 class Vector
@@ -41,16 +42,32 @@ class Vector
         //Append a value to the buffer
         void append(const T& val) {
             mtx.lock();
+            
+            //We check if the current size is at the current capacity
+            //If it is, we need to allocate a new larger buffer for the new element
             if (m_size == m_cap) {
-                T new_buff = new T[m_size + 1];
+                size_t new_size = m_size + 1;
+
+                //Create the new buffer
+                T* new_buff = new T[new_size];
+
+                //Copy over contents from old buffer (m_buffer) to the new temporary one
                 memcpy(new_buff, m_buffer, m_size);
-                new_buff[m_size+1] = val;
+               
+                //Assign the new element to its value
+                new_buff[new_size - 1] = val;
+
+                //Delete the current_buffer
                 delete[] m_buffer;
-                ++m_size;
-                m_buffer = new_buff;
+                
+                //Increase the size and transfer ownership to the new buffer
+                m_size = new_size;
+                m_cap = new_size;
+                m_buffer = std::move(new_buff);
             }
             else {
-                m_buffer[m_size-1] = val;
+                m_buffer[m_size] = val;
+                ++m_size;
             }
             mtx.unlock();
         }
@@ -77,11 +94,14 @@ class Vector
     
         // Will clear the contents of the buffer and return a buffer with the previous contents
         Vector<T, N> clear() {
-            Vector<T, m_size> ret_vec;
+            Vector<T, this->m_size> ret_vec;
             memcpy(ret_vec.m_buffer, this->m_buffer, this->m_size);
+            
             ret_vec.m_size = this->m_size;
             delete[] this->m_buffer;
+
             this->m_buffer = 0;
+            
             return ret_vec;
         }
     
@@ -113,9 +133,12 @@ class Vector
         void shrink_to_fit(int n){
             assert(n > 0 && "Shrink value must be greater than 0");
             assert(n < this->m_size && "Shrink value must be less than current size");
+            
             T new_buff = new T[n];
             memcpy(new_buff, this->m_buffer, n);
+            
             delete[] this->m_buffer;
+            
             this->m_buffer = new_buff;
             this->m_size = n;
         }
@@ -126,7 +149,7 @@ class Vector
         // Operators
         friend std::ostream& operator << (std::ostream& out, Vector<T, N>& vec ) {
             for(int i = 0; i < vec.m_size; ++i) {
-                out << vec.m_buffer[i];
+                out << vec.m_buffer[i] << ' ';
             }
             return out;
         }
