@@ -4,6 +4,12 @@ The way I've written things may (and probably will) be less efficient than what 
 This is my own personal project.
 
 # FINISHED:
+Vector
+
+Array
+
+Stack
+
 String
 
 for_each
@@ -16,10 +22,4 @@ Doubly_linked_list
 
 # IN PROGRESS:
 
-Vector
-
-Stack
-
-Smart_pointer
-
-Array
+Nothing ATM
