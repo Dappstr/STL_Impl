@@ -10,15 +10,16 @@ for_each
 
 copy
 
-Vector
-
 Linked_list
 
+Doubly_linked_list
+
 # IN PROGRESS:
+
+Vector
 
 Stack
 
 Smart_pointer
 
-# TODO:
 Array
