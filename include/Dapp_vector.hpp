@@ -20,13 +20,22 @@ class Vector
         // Constructors
         Vector() {
             m_buffer = new T[N];
-            m_size = N;
+
+            //Set the initial size to be 0 and the capacity will be an optional template argument
+            m_size = 0;
             m_cap = N;
+        }
+
+        Vector(const Vector& v) {
+            m_size = v.m_size;
+            m_cap = v.m_cap;
+            m_buffer = new T[m_cap];
+            std::copy(v.m_buffer, v.m_buffer + m_size, m_buffer);
         }
 
         Vector (size_t n) {
             m_buffer = new T[n];
-            m_size = n;
+            m_size = 0;
             m_cap = n;
         }
         
@@ -37,7 +46,7 @@ class Vector
             std::copy(lst.begin(), lst.end(), this->begin());
         }
          
-        // Utility functions
+        // Utility functions:q
     
         //Append a value to the buffer
         void append(const T& val) {
@@ -52,7 +61,7 @@ class Vector
                 T* new_buff = new T[new_size];
 
                 //Copy over contents from old buffer (m_buffer) to the new temporary one
-                memcpy(new_buff, m_buffer, m_size);
+                memcpy(new_buff, m_buffer, m_size * sizeof(T));
                
                 //Assign the new element to its value
                 new_buff[new_size - 1] = val;
@@ -86,22 +95,21 @@ class Vector
         //Point towards the beginning of the buffer assuming that the buffer has items.
         auto* begin() const noexcept(noexcept(this->m_size > 0)) {
             assert(m_buffer != NULL);
-            return &m_buffer[0];
+            m_buffer;
         }
     
         // Return the capacity of the buffer
         const size_t capacity() const {return m_cap; } // Will return maximum current capacity
     
         // Will clear the contents of the buffer and return a buffer with the previous contents
+        //TODO:
+        //  fix to accommodate for N. Currently the same `N` is required which will look a bit weird
         Vector<T, N> clear() {
-            Vector<T, this->m_size> ret_vec;
-            memcpy(ret_vec.m_buffer, this->m_buffer, this->m_size);
+            Vector<T, N> ret_vec(*this);
             
-            ret_vec.m_size = this->m_size;
-            delete[] this->m_buffer;
+            memset(this->m_buffer, m_cap, 0);
 
-            this->m_buffer = 0;
-            
+            std::fill_n(m_buffer, m_size, T());
             return ret_vec;
         }
     
@@ -111,7 +119,7 @@ class Vector
         // Returns a pointer to the end of the buffer
         auto* end() noexcept(noexcept(this->m_size > 0)) {
             assert(m_size >= 0);
-            return &m_buffer[m_size-1];
+            return m_buffer + m_size;
         }
        
         // Returns the last element and then reduces the size while preserving the capacity
