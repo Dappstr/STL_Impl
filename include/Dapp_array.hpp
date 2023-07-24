@@ -31,4 +31,16 @@ class Array
             
             return m_buffer[indx];
         }
+
+        //Utility functions
+        //TODO:
+        //    Include utility functions
+        //    Add operator overloads
+
+        //Operator overloads
+       
+        ~Array() {
+            m_size = 0;
+            delete[] m_buffer;
+        }
 };
