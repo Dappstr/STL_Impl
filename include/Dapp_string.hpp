@@ -72,8 +72,8 @@ class String
             m_buffer[m_size-1] = '\0';
         }
        
-        inline const char* begin() { return &m_buffer[0]; } // Will point to beginning of buffer
-        inline const char* end() { return &m_buffer[m_size]; } // Will point to end of buffer (null terminator)
+        inline const char* begin() { return m_buffer; } // Will point to beginning of buffer
+        inline const char* end() { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
 
         //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
         inline const char* at(int indx) noexcept(noexcept(indx < m_size)) { return &m_buffer[indx]; }
