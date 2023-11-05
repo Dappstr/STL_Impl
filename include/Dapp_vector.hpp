@@ -241,7 +241,11 @@ public:
         return out;
     }
 
-    T& operator[](size_t indx) {
+    T& operator[](const size_t indx) & {
+        return m_buffer[indx];
+    }
+    
+    const T& operator[] (const size_t indx) const& {
         return m_buffer[indx];
     }
 
