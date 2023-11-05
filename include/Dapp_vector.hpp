@@ -9,176 +9,256 @@
 template <typename T, size_t N = 0>
 class Vector
 {
-    private:
-        size_t m_size = 0;
-        size_t m_cap = N;
-        T* m_buffer = nullptr;
-        std::mutex mtx {};
+private:
+    size_t m_size = 0;
+    size_t m_cap = N;
+    T* m_buffer = nullptr;
+    std::mutex mtx {};
 
-    public:
+public:
 
-        // Constructors
-        Vector() {
-            m_buffer = new T[N];
+    // Constructors
+    Vector() {
+        m_buffer = new T[N];
 
-            //Set the initial size to be 0 and the capacity will be an optional template argument
-            m_size = 0;
-            m_cap = N;
+        //Set the initial size to be 0 and the capacity will be an optional template argument
+        m_size = 0;
+        m_cap = N;
+    }
+
+    Vector(const Vector& v) noexcept {
+        m_size = v.m_size;
+        m_cap = v.m_cap;
+        m_buffer = new T[m_cap];
+        std::copy(v.m_buffer, v.m_buffer + m_size, m_buffer);
+    }
+
+    Vector(Vector&& v) noexcept {
+        m_cap = std::move(v.m_cap);
+        m_size = std::move(v.m_size);
+
+        for(int i = 0; i < m_size; ++i) {
+            this->m_buffer = std::move(v.m_buffer[i]);
         }
+    }
 
-        Vector(const Vector& v) {
-            m_size = v.m_size;
-            m_cap = v.m_cap;
-            m_buffer = new T[m_cap];
-            std::copy(v.m_buffer, v.m_buffer + m_size, m_buffer);
-        }
+    Vector(const size_t n) noexcept {
+        m_buffer = new T[n];
+        m_size = 0;
+        m_cap = n;
+    }
 
-        Vector (size_t n) {
-            m_buffer = new T[n];
+    Vector(std::initializer_list<T> lst) noexcept {
+        m_size = lst.size();
+        m_cap = lst.size();
+        m_buffer = new T[m_cap];
+        std::copy(lst.begin(), lst.end(), this->begin());
+    }
+
+    // Utility functions
+
+    //Resize the current buffer
+    void resize(const size_t n) {
+        assert(n >= 0 && "Cannot resize vector to size less than 0");
+
+        if(n == 0) {
+            delete[] m_buffer;
+            m_cap = 0;
             m_size = 0;
+        }
+        else if (n != m_cap) {
+            T* new_buffer = new T[n];
+            size_t elements_to_copy = (n > m_size) ? n : m_size;
+
+            for(size_t i = 0; i < elements_to_copy; ++i) {
+                new_buffer[i] = m_buffer[i];
+            }
+
+            for(size_t i = m_size; i < n; ++i) {
+                new_buffer[i] = T();
+            }
+
+            delete[] m_buffer;
+            m_buffer = new_buffer;
+            m_size = (n > m_size) ? m_size : n;
             m_cap = n;
         }
-        
-        Vector(std::initializer_list<T> lst) {
-            m_size = lst.size();
-            m_cap = lst.size();
-            m_buffer = new T[m_cap];
-            std::copy(lst.begin(), lst.end(), this->begin());
-        }
-         
-        // Utility functions:q
-    
-        //Append a value to the buffer
-        void append(const T& val) {
-            mtx.lock();
-            
-            //We check if the current size is at the current capacity
-            //If it is, we need to allocate a new larger buffer for the new element
-            if (m_size == m_cap) {
-                size_t new_size = m_size + 1;
+    }
 
-                //Create the new buffer
-                T* new_buff = new T[new_size];
+    //Append a value to the buffer
+    void append(const T& val) {
+        mtx.lock();
 
-                //Copy over contents from old buffer (m_buffer) to the new temporary one
-                memcpy(new_buff, m_buffer, m_size * sizeof(T));
-               
-                //Assign the new element to its value
-                new_buff[new_size - 1] = val;
+        //We check if the current size is at the current capacity
+        //If it is, we need to allocate a new larger buffer for the new element
+        if (m_size == m_cap) {
+            size_t new_size = m_size + 1;
 
-                //Delete the current_buffer
-                delete[] m_buffer;
-                
-                //Increase the size and transfer ownership to the new buffer
-                m_size = new_size;
-                m_cap = new_size;
-                m_buffer = std::move(new_buff);
-            }
-            else {
-                m_buffer[m_size] = val;
-                ++m_size;
-            }
-            mtx.unlock();
-        }
-    
-        // Return the value at the given index
-        T at(size_t indx) {
-            assert(indx <= m_size);
-            return *(&m_buffer[indx]);
-        }
+            //Create the new buffer
+            T* new_buff = new T[new_size];
 
-        auto address_of(int indx) {
-            assert(indx <= m_size); 
-            return std::addressof(m_buffer[indx]);
-        }
+            //Copy over contents from old buffer (m_buffer) to the new temporary one
+            memcpy(new_buff, m_buffer, m_size * sizeof(T));
 
-        //Point towards the beginning of the buffer assuming that the buffer has items.
-        auto* begin() const noexcept(noexcept(this->m_size > 0)) {
-            assert(m_buffer != NULL);
-            m_buffer;
-        }
-    
-        // Return the capacity of the buffer
-        const size_t capacity() const {return m_cap; } // Will return maximum current capacity
-    
-        // Will clear the contents of the buffer and return a buffer with the previous contents
-        //TODO:
-        //  fix to accommodate for N. Currently the same `N` is required which will look a bit weird
-        Vector<T, N> clear() {
-            Vector<T, N> ret_vec(*this);
-            
-            memset(this->m_buffer, m_cap, 0);
+            //Assign the new element to its value
+            new_buff[new_size - 1] = val;
 
-            std::fill_n(m_buffer, m_size, T());
-            return ret_vec;
-        }
-    
-        // Returns whether the buffer is empty or not
-        const bool empty() { return m_size > 0; }
-
-        // Returns a pointer to the end of the buffer
-        auto* end() noexcept(noexcept(this->m_size > 0)) {
-            assert(m_size >= 0);
-            return m_buffer + m_size;
-        }
-       
-        // Returns the last element and then reduces the size while preserving the capacity
-        auto pop() {
-            assert(m_size > 0 && "Out of index error!\n");
-            T popped = m_buffer[m_size-1];            
-            --m_size;
-            
-            if(m_size > 0) {
-                T* new_buffer = new T[m_size];
-                memcpy(new_buffer, m_buffer, m_size * sizeof(T));
-                delete[] m_buffer;
-                m_buffer = new_buffer;
-            }
-            return popped;
-        }
-
-        // Will shrink the array down to size assuming n is greater than 0 as well as being lower than the current size while preserving the capacity.
-        void shrink_to_fit(int n){
-            assert(n > 0 && "Shrink value must be greater than 0");
-            assert(n < this->m_size && "Shrink value must be less than current size");
-            
-            T new_buff = new T[n];
-            memcpy(new_buff, this->m_buffer, n);
-            
-            delete[] this->m_buffer;
-            
-            this->m_buffer = new_buff;
-            this->m_size = n;
-        }
- 
-        // Returns size of the buffer
-        const size_t size() const { return m_size; } // Will return current size
-    
-        // Operators
-        friend std::ostream& operator << (std::ostream& out, Vector<T, N>& vec ) {
-            for(int i = 0; i < vec.m_size; ++i) {
-                out << vec.m_buffer[i] << ' ';
-            }
-            return out;
-        }
-    
-        T operator[](size_t indx) {
-            return m_buffer[indx];
-        }
-
-        Vector<T, N> operator+ (const Vector<T,N>& rhs) {
-            Vector<T, N> new_vec;
-            for(size_t i = 0; i < N; ++i) {
-                new_vec.m_buffer[i] = this->m_buffer[i] + rhs.m_buffer[i];
-            }
-
-            return new_vec;
-        }
-
-        ~Vector() {
+            //Delete the current_buffer
             delete[] m_buffer;
-            m_size = 0;
-            m_cap = 0;
-            m_buffer = nullptr;
+
+            //Increase the size and transfer ownership to the new buffer
+            m_size = new_size;
+            m_cap = new_size;
+            m_buffer = std::move(new_buff);
         }
+        else {
+            m_buffer[m_size] = val;
+            ++m_size;
+        }
+        mtx.unlock();
+    }
+
+    void fill(const T& val) {
+        //memset(m_buffer, val, sizeof(val) * this->m_cap);
+        for(int i = 0; i < m_cap; ++i) {
+            this->m_buffer[i] = val;
+        }
+        m_size = m_cap;
+    }
+
+    // Return the value at the given index
+    T at(size_t indx) {
+        assert(indx <= m_size);
+        return *(&m_buffer[indx]);
+    }
+
+    auto address_of(const int indx) {
+        assert(indx <= m_size);
+        return std::addressof(m_buffer[indx]);
+    }
+
+    //Point towards the beginning of the buffer assuming that the buffer has items.
+    auto* begin() const noexcept(noexcept(this->m_size > 0)) {
+        assert(m_buffer != NULL);
+        return m_buffer;
+    }
+
+    // Return the capacity of the buffer
+    const size_t capacity() const {return m_cap; } // Will return maximum current capacity
+
+    // Will clear the contents of the buffer and return a buffer with the previous contents
+    Vector<T, N> clear() {
+        Vector<T, N> ret_vec(*this);
+
+        memset(this->m_buffer, m_cap, 0);
+
+        std::fill_n(m_buffer, m_size, T());
+        return ret_vec;
+    }
+
+    // Returns whether the buffer is empty or not
+    const bool empty() { return m_size > 0; }
+
+    // Returns a pointer to the end of the buffer
+    auto* end() noexcept(noexcept(this->m_size > 0)) {
+        assert(m_size >= 0);
+        return m_buffer + m_size;
+    }
+
+    // Returns the last element and then reduces the size while preserving the capacity
+    auto pop() {
+        assert(m_size > 0 && "Out of index error!\n");
+        T popped = m_buffer[m_size-1];
+        --m_size;
+
+        if(m_size > 0) {
+            T* new_buffer = new T[m_size];
+            memcpy(new_buffer, m_buffer, m_size * sizeof(T));
+            delete[] m_buffer;
+            m_buffer = new_buffer;
+        }
+        return popped;
+    }
+
+    // Will shrink the array down to size assuming n is greater than 0 as well as being lower than the current size while preserving the capacity.
+    void shrink_to_fit(int n){
+        assert(n > 0 && "Shrink value must be greater than 0");
+        assert(n < this->m_size && "Shrink value must be less than current size");
+
+        T new_buff = new T[n];
+        memcpy(new_buff, this->m_buffer, n);
+
+        delete[] this->m_buffer;
+
+        this->m_buffer = new_buff;
+        this->m_size = n;
+    }
+
+    // Returns size of the buffer
+    const size_t size() const { return m_size; } // Will return current size
+
+    // Operators
+    Vector<T, N>& operator =(const Vector<T, N>& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
+        this->m_size = rhs.m_size;
+        this->m_cap = rhs.m_cap;
+
+        delete[] m_buffer;
+        this->m_buffer = new T[this->m_cap];
+
+        memcpy(this->m_buffer, rhs.m_buffer, this->m_size);
+
+        return *this;
+    }
+
+    Vector<T, N>& operator =(Vector<T, N>&& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
+        this->m_cap = std::move(rhs.m_cap);
+        this->m_size = std::move(rhs.m_size);
+
+
+        delete[] this->m_buffer;
+        this->m_buffer = new T[this->m_cap];
+
+        for(int i = 0; i < m_size; ++i) {
+            this->m_buffer[i] = std::move(rhs.m_buffer[i]);
+        }
+
+        return *this;
+    }
+
+    Vector<T, N>& operator =(std::initializer_list<T> lst) {
+        m_size = lst.size();
+        m_cap = lst.size();
+        m_buffer = new T[m_cap];
+        std::copy(lst.begin(), lst.end(), this->begin());
+
+        return *this;
+    }
+
+    friend std::ostream& operator << (std::ostream& out, Vector<T, N>& vec ) {
+        for(int i = 0; i < vec.m_cap; ++i) {
+            out << vec.m_buffer[i] << ' ';
+        }
+        return out;
+    }
+
+    T& operator[](size_t indx) {
+        return m_buffer[indx];
+    }
+
+    Vector<T, N> operator+ (const Vector<T,N>& rhs) {
+        Vector<T, N> new_vec;
+        for(size_t i = 0; i < N; ++i) {
+            new_vec.m_buffer[i] = this->m_buffer[i] + rhs.m_buffer[i];
+        }
+
+        return new_vec;
+    }
+
+    ~Vector() {
+        delete[] m_buffer;
+        m_buffer = nullptr;
+
+        m_size = 0;
+        m_cap = 0;
+    }
 };
