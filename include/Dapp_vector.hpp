@@ -244,17 +244,32 @@ public:
     T& operator[](const size_t indx) & {
         return m_buffer[indx];
     }
-    
+
     const T& operator[] (const size_t indx) const& {
         return m_buffer[indx];
     }
 
-    Vector<T, N> operator+ (const Vector<T,N>& rhs) {
-        Vector<T, N> new_vec;
-        for(size_t i = 0; i < N; ++i) {
-            new_vec.m_buffer[i] = this->m_buffer[i] + rhs.m_buffer[i];
+    //TODO:
+        //Fix
+    Vector<T, N> operator+ (const Vector<T, N>& rhs) {
+        const size_t max_size = this->m_size > rhs.m_size ? this->m_size : rhs.m_size;
+
+        Vector<T, N> new_vec(max_size);
+
+        for(size_t i = 0; i < max_size; ++i) {
+            new_vec[i] = this->m_buffer[i];
         }
 
+        for(size_t i = 0; i < rhs.m_size; ++i) {
+            if(i < this->m_size) {
+                new_vec.m_buffer[i] += rhs.m_buffer[i];
+            }
+            else {
+                new_vec.m_buffer[i] = rhs.m_buffer[i];
+            }
+        }
+
+        new_vec.m_size = max_size;
         return new_vec;
     }
 
