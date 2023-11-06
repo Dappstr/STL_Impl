@@ -76,7 +76,7 @@ public:
             std::copy(lst.begin(), lst.end(), this->begin());
         }
         catch(const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory in " __func__ << ": " << e.what();
+            std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
             exit(EXIT_FAILURE);
         }
     }
