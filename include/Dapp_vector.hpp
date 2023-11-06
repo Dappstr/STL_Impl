@@ -19,18 +19,32 @@ public:
 
     // Constructors
     Vector() {
-        m_buffer = new T[N];
+
+        try {
+            m_buffer = new T[N];
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
 
         //Set the initial size to be 0 and the capacity will be an optional template argument
         m_size = 0;
         m_cap = N;
     }
 
-    Vector(const Vector& v) noexcept {
+    Vector(const Vector& v) {
         m_size = v.m_size;
         m_cap = v.m_cap;
-        m_buffer = new T[m_cap];
-        std::copy(v.m_buffer, v.m_buffer + m_size, m_buffer);
+
+        try {
+            m_buffer = new T[m_cap];
+            std::copy(v.m_buffer, v.m_buffer + m_size, m_buffer);
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
     }
 
     Vector(Vector&& v) noexcept {
@@ -42,17 +56,29 @@ public:
         }
     }
 
-    Vector(const size_t n) noexcept {
-        m_buffer = new T[n];
-        m_size = 0;
-        m_cap = n;
+    Vector(const size_t n) {
+        try {
+            m_buffer = new T[n];
+            m_size = 0;
+            m_cap = n;
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
     }
 
-    Vector(std::initializer_list<T> lst) noexcept {
+    Vector(std::initializer_list<T> lst) {
         m_size = lst.size();
         m_cap = lst.size();
-        m_buffer = new T[m_cap];
-        std::copy(lst.begin(), lst.end(), this->begin());
+        try {
+            m_buffer = new T[m_cap];
+            std::copy(lst.begin(), lst.end(), this->begin());
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Error allocating memory in " __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
     }
 
     // Utility functions
@@ -127,12 +153,12 @@ public:
     }
 
     // Return the value at the given index
-    T at(size_t indx) {
+    T at(size_t indx) noexcept {
         assert(indx <= m_size);
         return *(&m_buffer[indx]);
     }
 
-    auto address_of(const int indx) {
+    auto address_of(const int indx) noexcept {
         assert(indx <= m_size);
         return std::addressof(m_buffer[indx]);
     }
@@ -144,7 +170,7 @@ public:
     }
 
     // Return the capacity of the buffer
-    const size_t capacity() const {return m_cap; } // Will return maximum current capacity
+    inline const size_t capacity() noexcept {return m_cap; } // Will return maximum current capacity
 
     // Will clear the contents of the buffer and return a buffer with the previous contents
     Vector<T, N> clear() {
@@ -157,7 +183,7 @@ public:
     }
 
     // Returns whether the buffer is empty or not
-    const bool empty() { return m_size > 0; }
+    inline const bool empty() noexcept { return m_size > 0; }
 
     // Returns a pointer to the end of the buffer
     auto* end() noexcept(noexcept(this->m_size > 0)) {
@@ -172,10 +198,17 @@ public:
         --m_size;
 
         if(m_size > 0) {
-            T* new_buffer = new T[m_size];
-            memcpy(new_buffer, m_buffer, m_size * sizeof(T));
-            delete[] m_buffer;
-            m_buffer = new_buffer;
+            T* new_buffer;
+            try {
+                new_buffer = new T[m_size];
+                memcpy(new_buffer, m_buffer, m_size * sizeof(T));
+                delete[] m_buffer;
+                m_buffer = new_buffer;
+            }
+            catch(const std::bad_alloc& e) {
+                std::cerr << "Could not allocate memory in " << __func__ << ": " << e.what();
+                exit(EXIT_FAILURE);
+            }
         }
         return popped;
     }
@@ -185,13 +218,21 @@ public:
         assert(n > 0 && "Shrink value must be greater than 0");
         assert(n < this->m_size && "Shrink value must be less than current size");
 
-        T new_buff = new T[n];
-        memcpy(new_buff, this->m_buffer, n);
+        T* new_buff;
+        try {
+            new_buff = new T[n];
 
-        delete[] this->m_buffer;
+            memcpy(new_buff, this->m_buffer, n);
 
-        this->m_buffer = new_buff;
-        this->m_size = n;
+            delete[] this->m_buffer;
+
+            this->m_buffer = new_buff;
+            this->m_size = n;
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Could not allocate memory in " << __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
     }
 
     // Returns size of the buffer
@@ -216,8 +257,15 @@ public:
 
 
         delete[] this->m_buffer;
-        this->m_buffer = new T[this->m_cap];
-
+        
+        try {
+            this->m_buffer = new T[this->m_cap];
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Could not allocate memory in " << __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
+        
         for(int i = 0; i < m_size; ++i) {
             this->m_buffer[i] = std::move(rhs.m_buffer[i]);
         }
@@ -228,9 +276,14 @@ public:
     Vector<T, N>& operator =(std::initializer_list<T> lst) {
         m_size = lst.size();
         m_cap = lst.size();
-        m_buffer = new T[m_cap];
-        std::copy(lst.begin(), lst.end(), this->begin());
-
+        try {
+            m_buffer = new T[m_cap];
+            std::copy(lst.begin(), lst.end(), this->begin());
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Could not allocate memory in " << __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
         return *this;
     }
 
@@ -249,12 +302,10 @@ public:
         return m_buffer[indx];
     }
 
-    //TODO:
-        //Fix
-    Vector<T, N> operator+ (const Vector<T, N>& rhs) {
-        const size_t max_size = this->m_size > rhs.m_size ? this->m_size : rhs.m_size;
+    Vector<T, N> operator+ (const Vector<T,N>& rhs) {
+        size_t max_size = this->m_size > rhs.m_size ? this->m_size : rhs.m_size;
 
-        Vector<T, N> new_vec(max_size);
+        Vector<T> new_vec(max_size);
 
         for(size_t i = 0; i < max_size; ++i) {
             new_vec[i] = this->m_buffer[i];
