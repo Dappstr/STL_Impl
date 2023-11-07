@@ -341,7 +341,7 @@ public:
     }
 
     ~Vector() {
-        if(m_cap > 0)
+        if(m_cap < 1)
             delete m_buffer;
         else {
             delete[] m_buffer;
