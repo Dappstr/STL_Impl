@@ -6,12 +6,12 @@
 #include <stdlib.h>
 #include <mutex>
 
-template <typename T, size_t N = 0>
+template <typename T>
 class Vector
 {
 private:
     size_t m_size = 0;
-    size_t m_cap = N;
+    size_t m_cap = 0;
     T* m_buffer = nullptr;
     std::mutex mtx {};
 
@@ -21,7 +21,7 @@ public:
     Vector() {
 
         try {
-            m_buffer = new T[N];
+            m_buffer = new T;
         }
         catch(const std::bad_alloc& e) {
             std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
@@ -30,7 +30,7 @@ public:
 
         //Set the initial size to be 0 and the capacity will be an optional template argument
         m_size = 0;
-        m_cap = N;
+        m_cap = 0;
     }
 
     Vector(const Vector& v) {
@@ -52,7 +52,7 @@ public:
         m_size = std::move(v.m_size);
 
         for(int i = 0; i < m_size; ++i) {
-            this->m_buffer = std::move(v.m_buffer[i]);
+            this->m_buffer[i] = std::move(v.m_buffer[i]);
         }
     }
 
@@ -66,6 +66,22 @@ public:
             std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
             exit(EXIT_FAILURE);
         }
+    }
+
+    Vector(const size_t n, const T& val) {
+        try {
+            m_buffer = new T[n];
+            m_cap = m_size = n;
+
+            for(size_t i = 0; i < n; ++i) {
+                m_buffer[i] = val;
+            }
+        }
+        catch(const std::bad_alloc& e) {
+            std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
+            exit(EXIT_FAILURE);
+        }
+
     }
 
     Vector(std::initializer_list<T> lst) {
@@ -173,8 +189,8 @@ public:
     inline const size_t capacity() noexcept {return m_cap; } // Will return maximum current capacity
 
     // Will clear the contents of the buffer and return a buffer with the previous contents
-    Vector<T, N> clear() {
-        Vector<T, N> ret_vec(*this);
+    Vector<T> clear() {
+        Vector<T> ret_vec(*this);
 
         memset(this->m_buffer, m_cap, 0);
 
@@ -239,7 +255,7 @@ public:
     const size_t size() const { return m_size; } // Will return current size
 
     // Operators
-    Vector<T, N>& operator =(const Vector<T, N>& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
+    Vector<T>& operator =(const Vector<T>& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
         this->m_size = rhs.m_size;
         this->m_cap = rhs.m_cap;
 
@@ -251,13 +267,13 @@ public:
         return *this;
     }
 
-    Vector<T, N>& operator =(Vector<T, N>&& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
+    Vector<T>& operator =(Vector<T>&& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
         this->m_cap = std::move(rhs.m_cap);
         this->m_size = std::move(rhs.m_size);
 
 
         delete[] this->m_buffer;
-        
+
         try {
             this->m_buffer = new T[this->m_cap];
         }
@@ -265,7 +281,7 @@ public:
             std::cerr << "Could not allocate memory in " << __func__ << ": " << e.what();
             exit(EXIT_FAILURE);
         }
-        
+
         for(int i = 0; i < m_size; ++i) {
             this->m_buffer[i] = std::move(rhs.m_buffer[i]);
         }
@@ -273,7 +289,7 @@ public:
         return *this;
     }
 
-    Vector<T, N>& operator =(std::initializer_list<T> lst) {
+    Vector<T>& operator =(std::initializer_list<T> lst) {
         m_size = lst.size();
         m_cap = lst.size();
         try {
@@ -287,7 +303,7 @@ public:
         return *this;
     }
 
-    friend std::ostream& operator << (std::ostream& out, Vector<T, N>& vec ) {
+    friend std::ostream& operator << (std::ostream& out, const Vector<T>& vec ) {
         for(int i = 0; i < vec.m_cap; ++i) {
             out << vec.m_buffer[i] << ' ';
         }
@@ -302,7 +318,7 @@ public:
         return m_buffer[indx];
     }
 
-    Vector<T, N> operator+ (const Vector<T,N>& rhs) {
+    Vector<T> operator+ (const Vector<T>& rhs) {
         size_t max_size = this->m_size > rhs.m_size ? this->m_size : rhs.m_size;
 
         Vector<T> new_vec(max_size);
@@ -325,7 +341,11 @@ public:
     }
 
     ~Vector() {
-        delete[] m_buffer;
+        if(m_cap > 0)
+            delete m_buffer;
+        else {
+            delete[] m_buffer;
+        }
         m_buffer = nullptr;
 
         m_size = 0;
