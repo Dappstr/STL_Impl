@@ -28,9 +28,7 @@ public:
         m_size = 1;
     }
 
-    //Explicit constructor to only allow either empty construction, or construction of strings
-    //This disallows users from passing something like an integer or double as a constructor parameter
-    explicit String(const char* str)
+    String(const char* str)
             : m_size(strlen(str)) {
         try {
             m_buffer = new char[m_size + 1];
@@ -43,7 +41,7 @@ public:
         strcpy(m_buffer, str);
     }
 
-    explicit String(std::initializer_list<char> init_list)
+    String(std::initializer_list<char> init_list)
             : m_size(init_list.size()) {
         try {
             m_buffer = new char[m_size];
@@ -397,12 +395,17 @@ public:
         return new_string;
     }
 
-    char& operator[](size_t indx) noexcept(noexcept(indx < this->m_size)) {
+    char& operator[](size_t indx) & noexcept(noexcept(indx < this->m_size)) {
         assert(indx < this->m_size && "Index must be within range\n");
         return m_buffer[indx];
     }
 
-    friend std::ostream &operator<<(std::ostream& out, const String src) {
+    char operator[](size_t indx) && noexcept(noexcept(indx < this->m_size)) {
+        assert(indx < this->m_size && "Index must be within range\n");
+        return m_buffer[indx];
+    }
+
+    friend std::ostream &operator<<(std::ostream& out, const String& src) {
         std::lock_guard<std::mutex> lock(mut);
         out << src.m_buffer;
         return out;
