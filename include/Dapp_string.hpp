@@ -55,6 +55,22 @@ public:
         m_buffer[m_size] = '\0';
     }
 
+    explicit String(const size_t sz, const char c)
+        : m_size(sz) {
+        try {
+            m_buffer = new char[m_size];
+        }
+        catch (const std::bad_alloc& e) {
+            std::cerr << "Error allocating memory for string object: " << e.what();
+            exit(EXIT_FAILURE);
+        }
+
+        for(size_t i = 0; i < m_size; ++i) {
+            m_buffer[i] = c;
+        }
+        m_buffer[m_size] = '\0';
+    }
+
     //Copy constructor
     String(const String& src)
             : m_size(src.m_size) {
