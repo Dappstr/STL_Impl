@@ -420,10 +420,35 @@ public:
         return buffer;
     }
 
+    void* operator new(size_t size, const std::nothrow_t&) noexcept {
+        std::lock_guard<std::mutex> lock(mut);
+        void *buffer = calloc(size, 1);
+        return buffer;
+    }
+
+    void* operator new[](size_t size) {
+        std::lock_guard<std::mutex> lock(mut);
+        void* buffer = calloc(size, 1);
+        if(!buffer) { throw std::bad_alloc(); };
+        return buffer;
+    }
+
+    void* operator new[](size_t size, const std::nothrow_t&) noexcept {
+        std::lock_guard<std::mutex> lock(mut);
+        void* buffer = calloc(size, 1);
+        return buffer;
+    }
+
     void operator delete(void *ptr) noexcept {
         mut.lock();
         free(ptr);
         mut.unlock();
+    }
+
+    void operator delete[](void* ptr) noexcept {
+        mut.unlock();
+        free(ptr);
+        mut.lock();
     }
 
     ~String() {
