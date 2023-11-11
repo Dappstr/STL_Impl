@@ -74,6 +74,14 @@ public:
                 strcpy(temp_str, m_buffer);
                 delete[] m_buffer;
 
+                try {
+                    m_buffer = new char[total_str_size];
+                }
+                catch (const std::bad_alloc& e) {
+                    std::cerr << "Error allocating memory for temporary string object: " << e.what();
+                    exit(EXIT_FAILURE);
+                }
+
                 strcpy(m_buffer, temp_str);
                 strcpy(m_buffer + strlen(temp_str), curr_str);
 
