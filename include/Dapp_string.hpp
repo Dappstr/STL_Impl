@@ -55,53 +55,27 @@ public:
 
     String(std::initializer_list<const char*> init_list) {
         size_t total_str_size = 0;
-        for(auto p = init_list.begin(); p != init_list.end(); ++p) {
-            const char* curr_str = *p;
-            total_str_size += strlen(curr_str);
+        // Calculate total size including null-terminators
+        for (const auto& str : init_list) {
+            total_str_size += strlen(str) + 1;
+        }
 
-            //Create temporary string to hold old data
-            char* temp_str;
-            //If our current m_buffer holds contents
-            if(m_size > 0) {
-                try {
-                    temp_str = new char[total_str_size];
-                }
-                catch (const std::bad_alloc& e) {
-                    std::cerr << "Error allocating memory for temporary string object: " << e.what();
-                    exit(EXIT_FAILURE);
-                }
+        // Allocate memory for the total size
+        try {
+            m_buffer = new char[total_str_size]();  // Using () to initialize the array to zero
+        }
+        catch (const std::bad_alloc& e) {
+            std::cerr << "Error allocating memory for string object: " << e.what();
+            exit(EXIT_FAILURE);
+        }
 
-                strcpy(temp_str, m_buffer);
-                delete[] m_buffer;
+        m_size = total_str_size;
 
-                try {
-                    m_buffer = new char[total_str_size];
-                }
-                catch (const std::bad_alloc& e) {
-                    std::cerr << "Error allocating memory for temporary string object: " << e.what();
-                    exit(EXIT_FAILURE);
-                }
-
-                strcpy(m_buffer, temp_str);
-                strcpy(m_buffer + strlen(temp_str), curr_str);
-
-                m_size = total_str_size;
-                delete[] temp_str;
-            }
-
-            //If our current m_buffer does not hold any data
-            else {
-                try {
-                    m_buffer = new char[total_str_size];
-                    m_size = total_str_size;
-                }
-                catch (const std::bad_alloc& e) {
-                    std::cerr << "Error allocating memory for string object: " << e.what();
-                    exit(EXIT_FAILURE);
-                }
-                strcpy(m_buffer, curr_str);
-            }
-
+        // Concatenate strings
+        char* buffer_ptr = m_buffer;  // Pointer to the current position in m_buffer
+        for (const auto& str : init_list) {
+            strcpy(buffer_ptr, str);
+            buffer_ptr += strlen(str);
         }
     }
 
