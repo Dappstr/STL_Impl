@@ -87,14 +87,15 @@ public:
     Vector(std::initializer_list<T> lst) {
         m_size = lst.size();
         m_cap = lst.size();
+
         try {
             m_buffer = new T[m_cap];
-            std::copy(lst.begin(), lst.end(), this->begin());
         }
         catch(const std::bad_alloc& e) {
             std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
             exit(EXIT_FAILURE);
         }
+        std::copy(lst.begin(), lst.end(), this->begin());
     }
 
     // Utility functions
@@ -109,7 +110,15 @@ public:
             m_size = 0;
         }
         else if (n != m_cap) {
-            T* new_buffer = new T[n];
+            T* new_buffer;
+            try {
+                new_buffer = new T[n];
+            }
+            catch(const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
             size_t elements_to_copy = (n > m_size) ? n : m_size;
 
             for(size_t i = 0; i < elements_to_copy; ++i) {
@@ -230,7 +239,7 @@ public:
     }
 
     // Will shrink the array down to size assuming n is greater than 0 as well as being lower than the current size while preserving the capacity.
-    void shrink_to_fit(int n){
+    void shrink_to_fit(int n) {
         assert(n > 0 && "Shrink value must be greater than 0");
         assert(n < this->m_size && "Shrink value must be less than current size");
 
@@ -252,10 +261,11 @@ public:
     }
 
     // Returns size of the buffer
-    const size_t size() const { return m_size; } // Will return current size
+    inline const size_t size() & { return m_size; } // Will return current size
+    inline const size_t size() && { return m_size; } // Will return current size
 
     // Operators
-    Vector<T>& operator =(const Vector<T>& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
+    Vector<T>& operator=(const Vector<T>& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
         this->m_size = rhs.m_size;
         this->m_cap = rhs.m_cap;
 
@@ -267,7 +277,7 @@ public:
         return *this;
     }
 
-    Vector<T>& operator =(Vector<T>&& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
+    Vector<T>& operator=(Vector<T>&& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
         this->m_cap = std::move(rhs.m_cap);
         this->m_size = std::move(rhs.m_size);
 
@@ -289,7 +299,7 @@ public:
         return *this;
     }
 
-    Vector<T>& operator =(std::initializer_list<T> lst) {
+    Vector<T>& operator=(std::initializer_list<T> lst) {
         m_size = lst.size();
         m_cap = lst.size();
         try {
@@ -303,7 +313,7 @@ public:
         return *this;
     }
 
-    friend std::ostream& operator << (std::ostream& out, const Vector<T>& vec ) {
+    friend std::ostream& operator<<(std::ostream& out, const Vector<T>& vec ) {
         for(int i = 0; i < vec.m_cap; ++i) {
             out << vec.m_buffer[i] << ' ';
         }
@@ -314,11 +324,11 @@ public:
         return m_buffer[indx];
     }
 
-    const T& operator[] (const size_t indx) const& {
+    const T& operator[](const size_t indx) const& {
         return m_buffer[indx];
     }
 
-    Vector<T> operator+ (const Vector<T>& rhs) {
+    Vector<T> operator+(const Vector<T>& rhs) {
         size_t max_size = this->m_size > rhs.m_size ? this->m_size : rhs.m_size;
 
         Vector<T> new_vec(max_size);
@@ -339,6 +349,10 @@ public:
         new_vec.m_size = max_size;
         return new_vec;
     }
+
+    /*TODO:
+     * Overload new, new[], delete, and delete[]
+     */
 
     ~Vector() {
         if(m_cap < 1)
