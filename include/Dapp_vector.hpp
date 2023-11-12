@@ -313,6 +313,20 @@ public:
         return *this;
     }
 
+    Vector<T>& operator++() {
+        for(size_t i = 0; i < this->m_size; ++i) {
+            m_buffer[i] += 1;
+        }
+        return *this;
+    }
+
+    Vector<T>& operator--() {
+        for(size_t i = 0; i < this->m_size; ++i) {
+            m_buffer[i] -= 1;
+        }
+        return *this;
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const Vector<T>& vec ) {
         for(int i = 0; i < vec.m_cap; ++i) {
             out << vec.m_buffer[i] << ' ';

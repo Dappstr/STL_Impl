@@ -450,6 +450,30 @@ public:
         return m_buffer[indx];
     }
 
+    bool operator==(const String& str) {
+        if(str.m_size != this->m_size) {
+            return false;
+        }
+        else {
+            for(size_t i = 0; i < str.m_size; ++i) {
+                if(this->m_buffer[i] != str.m_buffer[i]) { return false; }
+            }
+            return true;
+        }
+    }
+
+    bool operator==(const char* str) {
+        if(strlen(str) != this->m_size) {
+            return false;
+        }
+        else {
+            for(size_t i = 0; i < this->m_size; ++i) {
+                if(this->m_buffer[i] != str[i]) { return false; }
+            }
+            return true;
+        }
+    }
+
     friend std::ostream &operator<<(std::ostream& out, const String& src) {
         std::lock_guard<std::mutex> lock(mut);
         out << src.m_buffer;
