@@ -183,13 +183,13 @@ public:
         return *(&m_buffer[indx]);
     }
 
-    auto address_of(const int indx) noexcept {
+    decltype(auto) address_of(const int indx) noexcept {
         assert(indx <= m_size);
         return std::addressof(m_buffer[indx]);
     }
 
     //Point towards the beginning of the buffer assuming that the buffer has items.
-    auto* begin() const noexcept(noexcept(this->m_size > 0)) {
+    decltype(auto) begin() const noexcept(noexcept(this->m_size > 0)) {
         assert(m_buffer != NULL);
         return m_buffer;
     }
@@ -217,7 +217,7 @@ public:
     }
 
     // Returns the last element and then reduces the size while preserving the capacity
-    auto pop() {
+    decltype(auto) pop() {
         assert(m_size > 0 && "Out of index error!\n");
         T popped = m_buffer[m_size-1];
         --m_size;
@@ -350,9 +350,32 @@ public:
         return new_vec;
     }
 
-    /*TODO:
-     * Overload new, new[], delete, and delete[]
-     */
+    void* operator new(size_t sz) {
+        void* buffer = calloc(sz, 1);
+        if(!buffer) { throw std::bad_alloc(); }
+        return buffer;
+    }
+    void* operator new(size_t sz, const std::nothrow_t&) noexcept {
+        void* buffer = calloc(sz, 1);
+        return buffer;
+    }
+
+    void* operator new[](size_t sz) {
+        void* buffer = calloc(sz, 1);
+        if(!buffer) { throw std::bad_alloc(); }
+        return buffer;
+    }
+    void* operator new[](size_t sz, const std::nothrow_t&) noexcept {
+        void* buffer = calloc(sz, 1);
+        return buffer;
+    }
+
+    void operator delete(void* ptr) noexcept {
+        free(ptr);
+    }
+    void operator delete[](void* ptr) noexcept {
+        free(ptr);
+    }
 
     ~Vector() {
         if(m_cap < 1)

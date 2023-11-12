@@ -23,7 +23,7 @@ class Array
              }
 
              //Case for if type is char, must null terminate.
-             if(std::is_same_v<T, char>) {
+             if(std::is_same<T, char>::value) {
                 m_buffer[m_size] = '\0';
              }
            }
@@ -36,7 +36,7 @@ class Array
                 m_buffer[i] = src.m_buffer[i];
             }
             // If type is char, must null terminate.
-            if(std::is_same_v<T, char>) {
+            if(std::is_same<T, char>::value) {
                 m_buffer[m_size] = '\0';
             }
         }
@@ -91,7 +91,7 @@ class Array
             m_buffer = new T[m_size];
             memcpy(this->m_buffer, src.m_buffer, m_size);
             
-            if(std::is_same_v<T, char>) {
+            if(std::is_same<T, char>::value) {
                 m_buffer[m_size] = '\0';
             }
 

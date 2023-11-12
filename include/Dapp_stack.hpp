@@ -5,6 +5,7 @@ WIP
 
 #include <cstring>
 #include <iostream>
+#include <assert.h>
 
 template <typename T>
 concept acceptableType =
@@ -69,13 +70,13 @@ class Stack
 
         Stack(const Stack& src) {
             this->m_size = src.m_size;
-            this->m_buffer = new [m_size];
+            this->m_buffer = new T[m_size];
             memcpy(this->m_buffer, src.m_buffer, m_size);
         }
 
         Stack(Stack&& src) {
             this->m_size = src.m_size;
-            this->m_buffer = new [m_size];
+            this->m_buffer = new T[m_size];
             memcpy(this->m_buffer, src.m_buffer, m_size);
            
             delete[] src.m_buffer;

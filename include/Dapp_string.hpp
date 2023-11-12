@@ -49,7 +49,12 @@ public:
             exit(EXIT_FAILURE);
         }
 
-        std::copy(init_list.begin(), init_list.end(), m_buffer);
+        //std::copy(init_list.begin(), init_list.end(), m_buffer);
+        size_t indx = 0;
+        for(const auto ch : init_list) {
+            m_buffer[indx] = ch;
+            ++indx;
+        }
         m_buffer[m_size] = '\0';
     }
 
@@ -134,7 +139,6 @@ public:
 
         try {
             m_buffer = new char[1];
-
         }
         catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
@@ -149,7 +153,10 @@ public:
     inline const char *end() noexcept { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
 
     //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
-    inline const char* at(int indx) noexcept(noexcept(indx < m_size)) { return &m_buffer[indx]; }
+    inline const char& at(int indx) noexcept(noexcept(indx <= m_size)) {
+        assert(indx <= m_size && "Index must be less than or equal the current string size");
+        return m_buffer[indx];
+    }
 
     void append(const char *s) {
         std::lock_guard<std::mutex> lock(mut);
@@ -436,12 +443,10 @@ public:
     }
 
     char& operator[](size_t indx) & noexcept(noexcept(indx < this->m_size)) {
-        assert(indx < this->m_size && "Index must be within range\n");
         return m_buffer[indx];
     }
 
     char operator[](size_t indx) && noexcept(noexcept(indx < this->m_size)) {
-        assert(indx < this->m_size && "Index must be within range\n");
         return m_buffer[indx];
     }
 
