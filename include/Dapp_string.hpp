@@ -149,8 +149,8 @@ public:
         m_buffer[m_size - 1] = '\0';
     }
 
-    inline const char *begin() noexcept { return m_buffer; } // Will point to beginning of buffer
-    inline const char *end() noexcept { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
+    inline char *begin() noexcept { return m_buffer; } // Will point to beginning of buffer
+    inline char *end() noexcept { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
 
     //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
     inline const char& at(int indx) noexcept(noexcept(indx <= m_size)) {
@@ -454,6 +454,10 @@ public:
         std::lock_guard<std::mutex> lock(mut);
         out << src.m_buffer;
         return out;
+    }
+
+    operator char*() &{
+        return m_buffer;
     }
 
     void* operator new(size_t size) {
