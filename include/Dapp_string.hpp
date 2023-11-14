@@ -450,6 +450,34 @@ public:
         return m_buffer[indx];
     }
 
+    const bool operator<(const String& rhs) noexcept {
+        size_t min_size = this->m_size < rhs.m_size ? this->m_size : rhs.m_size;
+
+        for(size_t i = 0; i < min_size; ++i) {
+            if(this->m_buffer[i] < rhs.m_buffer[i]) {
+                return true;
+            }
+            else if(this->m_buffer[i] > rhs.m_buffer[i]) {
+                return false;
+            }
+        }
+        return this->m_size < rhs.m_size;
+    }
+
+    const bool operator<(const char* rhs) noexcept {
+        size_t min_size = this->m_size < strlen(rhs) ? this->m_size : strlen(rhs);
+
+        for(size_t i = 0; i < min_size; ++i) {
+            if(this->m_buffer[i] < rhs[i]) {
+                return true;
+            }
+            else if(this->m_buffer[i] > rhs[i]) {
+                return false;
+            }
+        }
+        return this->m_size < strlen(rhs);
+    }
+
     bool operator==(const String& str) {
         if(str.m_size != this->m_size) {
             return false;
@@ -514,13 +542,17 @@ public:
 
     void operator delete(void *ptr) noexcept {
         mut.lock();
-        free(ptr);
+        if(ptr) {
+            free(ptr);
+        }
         mut.unlock();
     }
 
     void operator delete[](void* ptr) noexcept {
         mut.unlock();
-        free(ptr);
+        if(ptr) {
+            free(ptr);
+        }
         mut.lock();
     }
 
