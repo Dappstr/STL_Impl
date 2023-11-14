@@ -16,6 +16,10 @@ for_each
 
 copy
 
+iota
+
+sort
+
 Linked_list
 
 Doubly_linked_list
