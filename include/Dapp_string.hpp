@@ -15,7 +15,7 @@ private:
 public:
     String() {
         try {
-            m_buffer = new char[1];
+            m_buffer = new char;
         }
         catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
@@ -23,7 +23,7 @@ public:
         }
 
         m_buffer[0] = '\0';
-        m_size = 1;
+        m_size = 0;
     }
 
     String(const char* str)
@@ -149,8 +149,8 @@ public:
         m_buffer[m_size - 1] = '\0';
     }
 
-    inline char *begin() noexcept { return m_buffer; } // Will point to beginning of buffer
-    inline char *end() noexcept { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
+    inline char* begin() noexcept { return m_buffer; } // Will point to beginning of buffer
+    inline char* end() noexcept { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
 
     //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
     inline const char& at(int indx) noexcept(noexcept(indx <= m_size)) {
@@ -158,7 +158,7 @@ public:
         return m_buffer[indx];
     }
 
-    void append(const char *s) {
+    void append(const char* s) {
         std::lock_guard<std::mutex> lock(mut);
 
         size_t new_size = m_size + strlen(s) + 1;
@@ -166,7 +166,7 @@ public:
         try {
             new_buffer = new char[new_size + 1];
         }
-        catch (const std::bad_alloc &e) {
+        catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
             exit(EXIT_FAILURE);
         }
@@ -192,7 +192,7 @@ public:
         m_size = new_size;
     }
 
-    void append(const String &src) {
+    void append(const String& src) {
         std::lock_guard<std::mutex> lock(mut);
 
         size_t new_size = m_size + strlen(src.m_buffer);
@@ -200,7 +200,7 @@ public:
         try {
             new_buffer = new char[new_size + 1];
         }
-        catch (const std::bad_alloc &e) {
+        catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
             exit(EXIT_FAILURE);
         }
@@ -218,7 +218,7 @@ public:
         m_size = new_size;
     }
 
-    void insert(size_t pos, const char *s) {
+    void insert(size_t pos, const char* s) {
         std::lock_guard<std::mutex> lock(mut);
 
         size_t new_size = m_size + strlen(s);
@@ -226,7 +226,7 @@ public:
         try {
             new_buffer = new char[new_size + 1];
         }
-        catch (const std::bad_alloc &e) {
+        catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
             exit(EXIT_FAILURE);
         }
@@ -241,7 +241,7 @@ public:
         try {
             m_buffer = new char[new_size + 1];
         }
-        catch (const std::bad_alloc &e) {
+        catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
             exit(EXIT_FAILURE);
         }
@@ -252,7 +252,7 @@ public:
         m_size = new_size;
     }
 
-    void insert(size_t pos, const String &s) {
+    void insert(size_t pos, const String& s) {
         std::lock_guard<std::mutex> lock(mut);
 
         size_t new_size = m_size + s.m_size;
@@ -260,7 +260,7 @@ public:
         try {
             new_buffer = new char[new_size + 1];
         }
-        catch (const std::bad_alloc &e) {
+        catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
             exit(EXIT_FAILURE);
         }
@@ -287,7 +287,7 @@ public:
         try {
             new_buffer = new char[new_size + 1];
         }
-        catch (const std::bad_alloc &e) {
+        catch (const std::bad_alloc& e) {
             std::cerr << "Error allocating memory for string object: " << e.what();
             exit(EXIT_FAILURE);
         }
@@ -389,7 +389,7 @@ public:
         return *this;
     }
 
-    String& operator=(String&& rhs) {
+    String& operator=(String&& rhs) noexcept {
         std::lock_guard<std::mutex> lock(mut);
 
         if (this == &rhs) { return *this; }
@@ -502,10 +502,29 @@ public:
         }
     }
 
-    friend std::ostream &operator<<(std::ostream& out, const String& src) {
+    friend std::ostream& operator<<(std::ostream& out, const String& src) {
         std::lock_guard<std::mutex> lock(mut);
         out << src.m_buffer;
         return out;
+    }
+
+    friend std::istream& operator>>(std::istream& in, String& dst) {
+        constexpr size_t BUFFER_SIZE = 1024;
+        char temp[BUFFER_SIZE];
+        if(in.getline(temp, BUFFER_SIZE)) {
+            if(dst.m_buffer != nullptr) {
+                if(dst.m_size == 0) {
+                    delete dst.m_buffer;
+                }
+                else {
+                    delete[] dst.m_buffer;
+                }
+            }
+            dst.m_buffer = new char[strlen(temp) + 1];
+            strcpy(dst.m_buffer, temp);
+            dst.m_size = strlen(temp);
+        }
+        return in;
     }
 
     operator char*() &{
@@ -517,7 +536,7 @@ public:
 
         void *buffer = calloc(size, 1);
 
-        if (!buffer) { throw std::bad_alloc(); }
+        if(!buffer) { throw std::bad_alloc(); }
         return buffer;
     }
 
@@ -540,7 +559,7 @@ public:
         return buffer;
     }
 
-    void operator delete(void *ptr) noexcept {
+    void operator delete(void* ptr) noexcept {
         mut.lock();
         if(ptr) {
             free(ptr);
