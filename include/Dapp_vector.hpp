@@ -194,6 +194,12 @@ public:
         return m_buffer;
     }
 
+    // Returns a pointer to the end of the buffer
+    decltype(auto) end() noexcept(noexcept(this->m_size > 0)) {
+        assert(m_size >= 0);
+        return m_buffer + m_size;
+    }
+
     // Return the capacity of the buffer
     inline const size_t capacity() noexcept {return m_cap; } // Will return maximum current capacity
 
@@ -209,12 +215,6 @@ public:
 
     // Returns whether the buffer is empty or not
     inline const bool empty() noexcept { return m_size > 0; }
-
-    // Returns a pointer to the end of the buffer
-    auto* end() noexcept(noexcept(this->m_size > 0)) {
-        assert(m_size >= 0);
-        return m_buffer + m_size;
-    }
 
     // Returns the last element and then reduces the size while preserving the capacity
     decltype(auto) pop() {
