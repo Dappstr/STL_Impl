@@ -4,13 +4,17 @@ String: **Done**
 
 Stack: **Nearly Finished**
 
-Vector: **In testing**
+Vector: **Done**
 
 Linked List: **Done**
 
 Array: **In Progress**
 
 for_each: **Done**
+
+iota: **Done**
+
+sort: **Done**
 
 copy: **Done**
 
