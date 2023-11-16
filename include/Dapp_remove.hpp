@@ -1,7 +1,7 @@
 #pragma once
 
 namespace dapp {
-    emplate<typename Iter, typename T>
+    template<typename Iter, typename T>
     void remove(Iter start, Iter end, T value) {
         while (start != end) {
             if (*start == value) {
