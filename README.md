@@ -4,26 +4,38 @@ The way I've written things may (and probably will) be less efficient than what 
 This is my own personal project.
 
 # FINISHED:
-Vector
-
-Array
+String
 
 Stack
 
-String
+Vector
+
+Linked List
+
+Doubly Linked List
+
+Array
+
+Smart Pointer
+
+accumulate
 
 for_each
 
-copy
+remove
+
+remove_if
+
+replace
+
+replace_if
 
 iota
 
 sort
 
-Linked_list
-
-Doubly_linked_list
+copy
 
 # IN PROGRESS:
 
-Nothing ATM
+Nothing at the moment
