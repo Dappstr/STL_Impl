@@ -1,6 +1,5 @@
 /*
 Manual implementation of a stack without the use of a container such as std::vector as a buffer
-WIP
 */
 #pragma once
 
@@ -76,7 +75,6 @@ namespace dapp {
             m_buffer[m_size - 1] = val;
         }
 
-
         Stack(const Stack& src) {
             this->m_size = src.m_size;
             this->m_buffer = new T[m_size];
@@ -110,7 +108,6 @@ namespace dapp {
 
         }
 
-
         friend std::ostream& operator<<(std::ostream& out, Stack& c) {
             for (size_t i = 0; i < c.m_size; ++i) {
                 out << '[';
@@ -119,7 +116,6 @@ namespace dapp {
             }
             return out;
         }
-
 
         ~Stack() {
             delete[] m_buffer;

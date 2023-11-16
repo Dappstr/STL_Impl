@@ -2,15 +2,29 @@
 
 String: **Done**
 
-Stack: **Nearly Finished**
+Stack: **Done**
 
 Vector: **Done**
 
 Linked List: **Done**
 
-Array: **In Progress**
+Doubly Linked List: **Done**
+
+Array: **Done**
+
+Smart Pointer: **Done**
+
+accumulate: **Done**
 
 for_each: **Done**
+
+remove: **Done**
+
+remove_if: **Done**
+
+replace: **Done**
+
+replace_if: **Done**
 
 iota: **Done**
 
@@ -18,6 +32,3 @@ sort: **Done**
 
 copy: **Done**
 
-Linked List: **Done**
-
-Doubly Linked List: **Done**
