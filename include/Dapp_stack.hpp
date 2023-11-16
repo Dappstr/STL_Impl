@@ -2,39 +2,48 @@
 Manual implementation of a stack without the use of a container such as std::vector as a buffer
 WIP
 */
+#pragma once
 
 #include <cstring>
 #include <iostream>
 #include <assert.h>
 
-template <typename T>
+/*
+ * C++20
+ * template <typename T>
 concept acceptableType =
                         std::is_move_constructible_v<std::decay_t<T>> &&
                         std::is_copy_constructible_v<std::decay_t<T>> && 
                         std::is_copy_assignable_v<std::decay_t<T>> &&
                         std::is_move_assignable_v<std::decay_t<T>>;
+*/
 
-template <acceptableType T, size_t N = 0>
-class Stack
-{
+namespace dapp {
+    template<typename T,
+            typename = std::is_copy_constructible<std::decay<T>>,
+            typename = std::is_move_constructible<std::decay<T>>,
+            typename = std::is_copy_assignable<std::decay<T>>,
+            typename = std::is_move_assignable<std::decay<T>>,
+            size_t N = 0>
+    class Stack {
     private:
         //std::vector<T> m_stack{};
-        T* m_buffer {};
+        T* m_buffer{};
         size_t m_size{N};
 
     protected:
-    void insertElement(const T& val) {
+        void insertElement(const T& val) {
             ++m_size;
             T* tempBuff = new T[m_size];
 
-            memcpy(tempBuff, m_buffer, m_size-1);
-            tempBuff[m_size-1] = val;
+            memcpy(tempBuff, m_buffer, m_size - 1);
+            tempBuff[m_size - 1] = val;
 
             delete[] m_buffer;
             m_buffer = new T[m_size];
 
             //memcpy(m_buffer, tempBuff, m_size); Not working for some reason
-            for(size_t i = 0; i < m_size; ++i) {
+            for (size_t i = 0; i < m_size; ++i) {
                 m_buffer[i] = std::move(tempBuff[i]);
             }
             delete[] tempBuff;
@@ -44,14 +53,14 @@ class Stack
             ++m_size;
             T* tempBuff = new T[m_size];
 
-            memcpy(tempBuff, m_buffer, m_size-1);
-            tempBuff[m_size-1] = std::move(val);
+            memcpy(tempBuff, m_buffer, m_size - 1);
+            tempBuff[m_size - 1] = std::move(val);
 
             delete[] m_buffer;
             m_buffer = new T[m_size];
 
             //memcpy(m_buffer, tempBuff, m_size); Not working for some reason
-            for(size_t i = 0; i < m_size; ++i) {
+            for (size_t i = 0; i < m_size; ++i) {
                 m_buffer[i] = std::move(tempBuff[i]);
             }
             delete[] tempBuff;
@@ -64,7 +73,7 @@ class Stack
         Stack(T val) {
             assert(N > 0);
             m_buffer = new T[m_size];
-            m_buffer[m_size-1] = val;
+            m_buffer[m_size - 1] = val;
         }
 
 
@@ -78,42 +87,43 @@ class Stack
             this->m_size = src.m_size;
             this->m_buffer = new T[m_size];
             memcpy(this->m_buffer, src.m_buffer, m_size);
-           
+
             delete[] src.m_buffer;
             src.m_buffer = nullptr;
             src.m_size = 0;
         }
 
         //Operators
-        Stack& operator=(const Stack& src) {
-            this->m_size=src.m_size;    
-            
+        Stack &operator=(const Stack& src) {
+            this->m_size = src.m_size;
+
             memcpy(this->m_buffer, src.m_buffer, m_size);
         }
 
-        Stack& operator=(Stack&& src) {
-            this->m_size=src.m_size;
+        Stack &operator=(Stack&& src) {
+            this->m_size = src.m_size;
             memcpy(this->m_buffer, src.m_buffer, m_size);
-            
+
             delete[] src.m_buffer;
             src.m_buffer = nullptr;
             src.m_size = 0;
 
         }
 
-        
-        friend std::ostream& operator<<(std::ostream& out, Stack<T, N>& c) {
-            for(size_t i = 0; i < c.m_size; ++i) {
+
+        friend std::ostream& operator<<(std::ostream& out, Stack& c) {
+            for (size_t i = 0; i < c.m_size; ++i) {
                 out << '[';
-                if(i == c.m_size - 1) { out << c.m_buffer[i] << ']'; }
+                if (i == c.m_size - 1) { out << c.m_buffer[i] << ']'; }
                 else { out << c.m_buffer[i] << "], "; }
             }
             return out;
         }
-        
+
 
         ~Stack() {
             delete[] m_buffer;
             m_size = 0;
         }
-};
+    };
+}

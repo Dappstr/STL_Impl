@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <cstring> // This imports strlen and strcpy functions
 #include <utility> // std::move
@@ -5,578 +7,576 @@
 #include <stdlib.h>
 #include <mutex>
 
-class String {
-private:
-    size_t m_size = 0;
-    char *m_buffer = nullptr;
-    static const size_t npos = -1;
-    inline static std::mutex mut;
+namespace dapp {
+    class String {
+    private:
+        size_t m_size = 0;
+        char *m_buffer = nullptr;
+        static const size_t npos = -1;
+        inline static std::mutex mut;
 
-public:
-    String() {
-        try {
-            m_buffer = new char;
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
+    public:
+        String() {
+            try {
+                m_buffer = new char;
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
 
-        m_buffer[0] = '\0';
-        m_size = 0;
-    }
-
-    String(const char* str)
-            : m_size(strlen(str)) {
-        try {
-            m_buffer = new char[m_size + 1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            m_buffer[0] = '\0';
+            m_size = 0;
         }
 
-        strcpy(m_buffer, str);
-    }
+        String(const char* str)
+                : m_size(strlen(str)) {
+            try {
+                m_buffer = new char[m_size + 1];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
 
-    String(std::initializer_list<char> init_list)
-            : m_size(init_list.size()) {
-        try {
-            m_buffer = new char[m_size];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
-
-        //std::copy(init_list.begin(), init_list.end(), m_buffer);
-        size_t indx = 0;
-        for(const auto ch : init_list) {
-            m_buffer[indx] = ch;
-            ++indx;
-        }
-        m_buffer[m_size] = '\0';
-    }
-
-    String(std::initializer_list<const char*> init_list) {
-        size_t total_str_size = 0;
-        // Calculate total size including null-terminators
-        for (const auto& str : init_list) {
-            total_str_size += strlen(str) + 1;
+            strcpy(m_buffer, str);
         }
 
-        // Allocate memory for the total size
-        try {
-            m_buffer = new char[total_str_size]();  // Using () to initialize the array to zero
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
+        String(std::initializer_list<char> init_list)
+                : m_size(init_list.size()) {
+            try {
+                m_buffer = new char[m_size];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
 
-        m_size = total_str_size;
-
-        // Concatenate strings
-        char* buffer_ptr = m_buffer;  // Pointer to the current position in m_buffer
-        for (const auto& str : init_list) {
-            strcpy(buffer_ptr, str);
-            buffer_ptr += strlen(str);
-        }
-    }
-
-    explicit String(const size_t sz, const char c)
-            : m_size(sz) {
-        try {
-            m_buffer = new char[m_size];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            //std::copy(init_list.begin(), init_list.end(), m_buffer);
+            size_t indx = 0;
+            for (const auto ch: init_list) {
+                m_buffer[indx] = ch;
+                ++indx;
+            }
+            m_buffer[m_size] = '\0';
         }
 
-        for(size_t i = 0; i < m_size; ++i) {
-            m_buffer[i] = c;
-        }
-        m_buffer[m_size] = '\0';
-    }
+        String(std::initializer_list<const char *> init_list) {
+            size_t total_str_size = 0;
+            // Calculate total size including null-terminators
+            for (const auto& str: init_list) {
+                total_str_size += strlen(str) + 1;
+            }
 
-    //Copy constructor
-    String(const String& src)
-            : m_size(src.m_size) {
-        try {
-            m_buffer = new char[m_size];
+            // Allocate memory for the total size
+            try {
+                m_buffer = new char[total_str_size]();  // Using () to initialize the array to zero
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
 
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
+            m_size = total_str_size;
 
-        strcpy(m_buffer, src.m_buffer);
-    }
-
-    //Move constructor
-    String(String&& src)
-            : m_size(std::move(src.m_size)) {
-        m_buffer = std::move(src.m_buffer);
-
-        //We set the source string to have no value.
-        //This could differ from the STL implementation of string where after moving, the object is in a valid but undefined state, however,
-        //I feel as though we should be able to define the state clearly, which is that it is empty
-        src.m_buffer = nullptr;
-        src.m_size = 0;
-    }
-
-    inline const size_t size() noexcept { return m_size; }
-
-    inline const bool empty() noexcept { return m_size > 0 ? false : true; }
-
-    //Will zero every element in the string, but retain the size
-    //Assuming that the m_size member is greater than 0 in order to not underflow when setting the null terminator
-    void clear() {
-        assert(m_size > 0 && "Error! empty() requires size greater than 0");
-        delete[] m_buffer;
-
-        try {
-            m_buffer = new char[1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            // Concatenate strings
+            char* buffer_ptr = m_buffer;  // Pointer to the current position in m_buffer
+            for (const auto &str: init_list) {
+                strcpy(buffer_ptr, str);
+                buffer_ptr += strlen(str);
+            }
         }
 
-        m_size = 1;
-        m_buffer[m_size - 1] = '\0';
-    }
+        explicit String(const size_t sz, const char c)
+                : m_size(sz) {
+            try {
+                m_buffer = new char[m_size];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
 
-    inline char* begin() noexcept { return m_buffer; } // Will point to beginning of buffer
-    inline char* end() noexcept { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
-
-    //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
-    inline const char& at(int indx) noexcept(noexcept(indx <= m_size)) {
-        assert(indx <= m_size && "Index must be less than or equal the current string size");
-        return m_buffer[indx];
-    }
-
-    void append(const char* s) {
-        std::lock_guard<std::mutex> lock(mut);
-
-        size_t new_size = m_size + strlen(s) + 1;
-        char* new_buffer;
-        try {
-            new_buffer = new char[new_size + 1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            for (size_t i = 0; i < m_size; ++i) {
+                m_buffer[i] = c;
+            }
+            m_buffer[m_size] = '\0';
         }
 
-        strcpy(new_buffer, m_buffer);
-        strcat(new_buffer, s);
+        //Copy constructor
+        String(const String &src)
+                : m_size(src.m_size) {
+            try {
+                m_buffer = new char[m_size];
 
-        new_buffer[new_size] = '\0';
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
 
-        delete[] this->m_buffer;
-
-        try {
-            m_buffer = new char[new_size];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
-
-        strcpy(this->m_buffer, new_buffer);
-
-        delete[]new_buffer;
-        m_size = new_size;
-    }
-
-    void append(const String& src) {
-        std::lock_guard<std::mutex> lock(mut);
-
-        size_t new_size = m_size + strlen(src.m_buffer);
-        char *new_buffer;
-        try {
-            new_buffer = new char[new_size + 1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            strcpy(m_buffer, src.m_buffer);
         }
 
-        strcpy(new_buffer, m_buffer);
-        strcat(new_buffer, src.m_buffer);
+        //Move constructor
+        String(String&& src)
+                : m_size(std::move(src.m_size)) {
+            m_buffer = std::move(src.m_buffer);
 
-        new_buffer[new_size] = '\0';
-
-        delete[] this->m_buffer;
-        this->m_buffer = new char[m_size + 1];
-        strcpy(m_buffer, new_buffer);
-
-        delete[] new_buffer;
-        m_size = new_size;
-    }
-
-    void insert(size_t pos, const char* s) {
-        std::lock_guard<std::mutex> lock(mut);
-
-        size_t new_size = m_size + strlen(s);
-        char *new_buffer;
-        try {
-            new_buffer = new char[new_size + 1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            //We set the source string to have no value.
+            //This could differ from the STL implementation of string where after moving, the object is in a valid but undefined state, however,
+            //I feel as though we should be able to define the state clearly, which is that it is empty
+            src.m_buffer = nullptr;
+            src.m_size = 0;
         }
 
-        strncpy(new_buffer, m_buffer, pos);
-        new_buffer[pos] = '\0';
+        inline const size_t size() noexcept { return m_size; }
 
-        strcat(new_buffer, s);
-        strcat(new_buffer, m_buffer + pos);
+        inline const bool empty() noexcept { return m_size > 0 ? false : true; }
 
-        delete[] m_buffer;
-        try {
+        //Will zero every element in the string, but retain the size
+        //Assuming that the m_size member is greater than 0 in order to not underflow when setting the null terminator
+        void clear() {
+            assert(m_size > 0 && "Error! empty() requires size greater than 0");
+            delete[] m_buffer;
+
+            try {
+                m_buffer = new char[1];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            m_size = 1;
+            m_buffer[m_size - 1] = '\0';
+        }
+
+        inline char* begin() noexcept { return m_buffer; } // Will point to beginning of buffer
+        inline char* end() noexcept { return m_buffer + m_size; } // Will point to end of buffer (null terminator)
+
+        //Will point to the character (address at) indx. This way if we wanted to modify the index using `at` instead of the index operator, we can.
+        inline const char& at(int indx) noexcept(noexcept(indx <= m_size)) {
+            assert(indx <= m_size && "Index must be less than or equal the current string size");
+            return m_buffer[indx];
+        }
+
+        void append(const char* s) {
+            std::lock_guard<std::mutex> lock(mut);
+
+            size_t new_size = m_size + strlen(s) + 1;
+            char *new_buffer;
+            try {
+                new_buffer = new char[new_size + 1];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            strcpy(new_buffer, m_buffer);
+            strcat(new_buffer, s);
+
+            new_buffer[new_size] = '\0';
+
+            delete[] this->m_buffer;
+
+            try {
+                m_buffer = new char[new_size];
+            }
+            catch (const std::bad_alloc &e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            strcpy(this->m_buffer, new_buffer);
+
+            delete[]new_buffer;
+            m_size = new_size;
+        }
+
+        void append(const String& src) {
+            std::lock_guard<std::mutex> lock(mut);
+
+            size_t new_size = m_size + strlen(src.m_buffer);
+            char *new_buffer;
+            try {
+                new_buffer = new char[new_size + 1];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            strcpy(new_buffer, m_buffer);
+            strcat(new_buffer, src.m_buffer);
+
+            new_buffer[new_size] = '\0';
+
+            delete[] this->m_buffer;
+            this->m_buffer = new char[m_size + 1];
+            strcpy(m_buffer, new_buffer);
+
+            delete[] new_buffer;
+            m_size = new_size;
+        }
+
+        void insert(size_t pos, const char* s) {
+            std::lock_guard<std::mutex> lock(mut);
+
+            size_t new_size = m_size + strlen(s);
+            char *new_buffer;
+            try {
+                new_buffer = new char[new_size + 1];
+            }
+            catch (const std::bad_alloc &e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            strncpy(new_buffer, m_buffer, pos);
+            new_buffer[pos] = '\0';
+
+            strcat(new_buffer, s);
+            strcat(new_buffer, m_buffer + pos);
+
+            delete[] m_buffer;
+            try {
+                m_buffer = new char[new_size + 1];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            strcpy(m_buffer, new_buffer);
+
+            m_buffer[new_size] = '\0';
+            m_size = new_size;
+        }
+
+        void insert(size_t pos, const String& s) {
+            std::lock_guard<std::mutex> lock(mut);
+
+            size_t new_size = m_size + s.m_size;
+            char *new_buffer;
+            try {
+                new_buffer = new char[new_size + 1];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            strncpy(new_buffer, m_buffer, pos);
+            new_buffer[pos] = '\0';
+
+            strcat(m_buffer, s.m_buffer);
+            strcat(new_buffer, m_buffer + pos);
+
+            delete[] m_buffer;
             m_buffer = new char[new_size + 1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
 
-        strcpy(m_buffer, new_buffer);
-
-        m_buffer[new_size] = '\0';
-        m_size = new_size;
-    }
-
-    void insert(size_t pos, const String& s) {
-        std::lock_guard<std::mutex> lock(mut);
-
-        size_t new_size = m_size + s.m_size;
-        char *new_buffer;
-        try {
-            new_buffer = new char[new_size + 1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            strcpy(m_buffer, new_buffer);
+            m_buffer[new_size] = '\0';
+            m_size = new_size;
         }
 
-        strncpy(new_buffer, m_buffer, pos);
-        new_buffer[pos] = '\0';
+        void erase(size_t pos, size_t len) {
+            assert(pos + len <= m_size && "Length must be less than or equal to the string length");
 
-        strcat(m_buffer, s.m_buffer);
-        strcat(new_buffer, m_buffer + pos);
+            size_t new_size = m_size - len;
+            char *new_buffer;
+            try {
+                new_buffer = new char[new_size + 1];
+            }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
+            }
 
-        delete[] m_buffer;
-        m_buffer = new char[new_size + 1];
+            strncpy(new_buffer, m_buffer, pos); // Copy characters up to (not including) `pos`
+            strcpy(new_buffer + pos,
+                   m_buffer + pos + len); //Then copy the characters starting at pos, then up to length
 
-        strcpy(m_buffer, new_buffer);
-        m_buffer[new_size] = '\0';
-        m_size = new_size;
-    }
-
-    void erase(size_t pos, size_t len) {
-        assert(pos + len <= m_size && "Length must be less than or equal to the string length");
-
-        size_t new_size = m_size - len;
-        char *new_buffer;
-        try {
-            new_buffer = new char[new_size + 1];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            delete[] m_buffer;
+            m_size = new_size;
+            strcpy(m_buffer, new_buffer);
+            m_buffer[m_size] = '\0';
         }
 
-        strncpy(new_buffer, m_buffer, pos); // Copy characters up to (not including) `pos`
-        strcpy(new_buffer + pos, m_buffer + pos + len); //Then copy the characters starting at pos, then up to length
-
-        delete[] m_buffer;
-        m_size = new_size;
-        strcpy(m_buffer, new_buffer);
-        m_buffer[m_size] = '\0';
-    }
-
-    void erase() {
-        clear();
-    }
-
-    size_t find(const String& s, size_t pos = 0) const {
-        if (m_size < s.m_size) {
-            return npos;
+        void erase() {
+            clear();
         }
 
-        if (pos < m_size) {
-            char first_char = s.m_buffer[0];
+        size_t find(const String& s, size_t pos = 0) const {
+            if (m_size < s.m_size) {
+                return npos;
+            }
 
-            for (size_t i = pos; i < m_size; ++i) {
-                if (m_buffer[i] == first_char) {
-                    String str_cmp; // String used for comparison
-                    strncpy(str_cmp.m_buffer, this->m_buffer + i, s.m_size);
-                    str_cmp.m_buffer[s.m_size] = '\0';
+            if (pos < m_size) {
+                char first_char = s.m_buffer[0];
 
-                    if (strcmp(str_cmp.m_buffer, s.m_buffer) == 0) {
-                        return i;
+                for (size_t i = pos; i < m_size; ++i) {
+                    if (m_buffer[i] == first_char) {
+                        String str_cmp; // String used for comparison
+                        strncpy(str_cmp.m_buffer, this->m_buffer + i, s.m_size);
+                        str_cmp.m_buffer[s.m_size] = '\0';
+
+                        if (strcmp(str_cmp.m_buffer, s.m_buffer) == 0) {
+                            return i;
+                        }
                     }
                 }
             }
-        }
-        return npos;
-    }
-
-    size_t find(const char* s, size_t pos = 0) const {
-        size_t s_len = strlen(s);
-
-        if (m_size < s_len) {
             return npos;
         }
 
-        if (pos < m_size) {
-            char first_char = s[0];
-            for (size_t i = pos; i < m_size; ++i) {
-                if (m_buffer[i] == first_char) {
-                    char str_cmp[s_len + 1]; // Char array used for comparison
-                    strncpy(str_cmp, this->m_buffer + i, s_len);
-                    str_cmp[s_len] = '\0';
+        size_t find(const char* s, size_t pos = 0) const {
+            size_t s_len = strlen(s);
 
-                    if (strcmp(str_cmp, s) == 0) {
-                        return i;
+            if (m_size < s_len) {
+                return npos;
+            }
+
+            if (pos < m_size) {
+                char first_char = s[0];
+                for (size_t i = pos; i < m_size; ++i) {
+                    if (m_buffer[i] == first_char) {
+                        char str_cmp[s_len + 1]; // Char array used for comparison
+                        strncpy(str_cmp, this->m_buffer + i, s_len);
+                        str_cmp[s_len] = '\0';
+
+                        if (strcmp(str_cmp, s) == 0) {
+                            return i;
+                        }
                     }
                 }
             }
-        }
-        return npos;
-    }
-
-    String substr(size_t pos = 0, size_t len = npos) const {
-        assert(pos <= this->m_size && " substr pos cannot be greater than size");
-
-        char *sub_str;
-        try {
-            sub_str = new char[len + 1];
-        }
-        catch (const std::bad_alloc &e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
+            return npos;
         }
 
-        sub_str = (char*) memcpy(sub_str, this->m_buffer + pos, len);
-        sub_str[len] = '\0';
+        String substr(size_t pos = 0, size_t len = npos) const {
+            assert(pos <= this->m_size && " substr pos cannot be greater than size");
 
-        String ret_str(sub_str);
-        delete[] sub_str;
-        return ret_str;
-    }
-
-
-    //Operators
-    String& operator=(const String& rhs) {
-        std::lock_guard<std::mutex> lock(mut);
-
-        if (this == &rhs) { return *this; }
-        delete[] m_buffer;
-
-        m_size = rhs.m_size;
-        m_buffer = new char[m_size + 1];
-
-        memcpy(m_buffer, rhs.m_buffer, rhs.m_size);
-        m_buffer[m_size] = '\0';
-
-        return *this;
-    }
-
-    String& operator=(String&& rhs) noexcept {
-        std::lock_guard<std::mutex> lock(mut);
-
-        if (this == &rhs) { return *this; }
-        delete[] m_buffer;
-
-        m_size = rhs.m_size;
-        strcpy(m_buffer, rhs.m_buffer);
-
-        rhs.m_size = 0;
-        rhs.m_buffer = nullptr;
-
-        return *this;
-    }
-
-    String operator+(const char* rhs) {
-        size_t new_size = m_size + strlen(rhs) + 1;
-        char *new_buffer;
-        try {
-            new_buffer = new char[new_size];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
-
-        strcpy(new_buffer, this->m_buffer);
-        strcat(new_buffer, rhs);
-
-        String new_str(new_buffer);
-        return new_str;
-    }
-
-    String operator+(const String& rhs) {
-        size_t size = m_size + rhs.m_size + 1;
-        char *new_buffer;
-        try {
-            new_buffer = new char[size];
-        }
-        catch (const std::bad_alloc& e) {
-            std::cerr << "Error allocating memory for string object: " << e.what();
-            exit(EXIT_FAILURE);
-        }
-
-        strcpy(new_buffer, m_buffer);
-        strcat(new_buffer, rhs.m_buffer);
-
-        String new_string(new_buffer);
-
-        delete[] new_buffer;
-        return new_string;
-    }
-
-    char& operator[](size_t indx) & noexcept(noexcept(indx < this->m_size)) {
-        return m_buffer[indx];
-    }
-
-    char operator[](size_t indx) && noexcept(noexcept(indx < this->m_size)) {
-        return m_buffer[indx];
-    }
-
-    const bool operator<(const String& rhs) noexcept {
-        size_t min_size = this->m_size < rhs.m_size ? this->m_size : rhs.m_size;
-
-        for(size_t i = 0; i < min_size; ++i) {
-            if(this->m_buffer[i] < rhs.m_buffer[i]) {
-                return true;
+            char *sub_str;
+            try {
+                sub_str = new char[len + 1];
             }
-            else if(this->m_buffer[i] > rhs.m_buffer[i]) {
-                return false;
+            catch (const std::bad_alloc &e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
             }
+
+            sub_str = (char *) memcpy(sub_str, this->m_buffer + pos, len);
+            sub_str[len] = '\0';
+
+            String ret_str(sub_str);
+            delete[] sub_str;
+            return ret_str;
         }
-        return this->m_size < rhs.m_size;
-    }
 
-    const bool operator<(const char* rhs) noexcept {
-        size_t min_size = this->m_size < strlen(rhs) ? this->m_size : strlen(rhs);
 
-        for(size_t i = 0; i < min_size; ++i) {
-            if(this->m_buffer[i] < rhs[i]) {
-                return true;
+        //Operators
+        String &operator=(const String& rhs) {
+            std::lock_guard<std::mutex> lock(mut);
+
+            if (this == &rhs) { return *this; }
+            delete[] m_buffer;
+
+            m_size = rhs.m_size;
+            m_buffer = new char[m_size + 1];
+
+            memcpy(m_buffer, rhs.m_buffer, rhs.m_size);
+            m_buffer[m_size] = '\0';
+
+            return *this;
+        }
+
+        String &operator=(String&& rhs) noexcept {
+            std::lock_guard<std::mutex> lock(mut);
+
+            if (this == &rhs) { return *this; }
+            delete[] m_buffer;
+
+            m_size = rhs.m_size;
+            strcpy(m_buffer, rhs.m_buffer);
+
+            rhs.m_size = 0;
+            rhs.m_buffer = nullptr;
+
+            return *this;
+        }
+
+        String operator+(const char* rhs) {
+            size_t new_size = m_size + strlen(rhs) + 1;
+            char *new_buffer;
+            try {
+                new_buffer = new char[new_size];
             }
-            else if(this->m_buffer[i] > rhs[i]) {
-                return false;
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
             }
-        }
-        return this->m_size < strlen(rhs);
-    }
 
-    bool operator==(const String& str) {
-        if(str.m_size != this->m_size) {
-            return false;
+            strcpy(new_buffer, this->m_buffer);
+            strcat(new_buffer, rhs);
+
+            String new_str(new_buffer);
+            return new_str;
         }
-        else {
-            for(size_t i = 0; i < str.m_size; ++i) {
-                if(this->m_buffer[i] != str.m_buffer[i]) { return false; }
+
+        String operator+(const String& rhs) {
+            size_t size = m_size + rhs.m_size + 1;
+            char *new_buffer;
+            try {
+                new_buffer = new char[size];
             }
-            return true;
-        }
-    }
-
-    bool operator==(const char* str) {
-        if(strlen(str) != this->m_size) {
-            return false;
-        }
-        else {
-            for(size_t i = 0; i < this->m_size; ++i) {
-                if(this->m_buffer[i] != str[i]) { return false; }
+            catch (const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for string object: " << e.what();
+                exit(EXIT_FAILURE);
             }
-            return true;
+
+            strcpy(new_buffer, m_buffer);
+            strcat(new_buffer, rhs.m_buffer);
+
+            String new_string(new_buffer);
+
+            delete[] new_buffer;
+            return new_string;
         }
-    }
 
-    friend std::ostream& operator<<(std::ostream& out, const String& src) {
-        std::lock_guard<std::mutex> lock(mut);
-        out << src.m_buffer;
-        return out;
-    }
+        char &operator[](size_t indx) & noexcept(noexcept(indx < this->m_size)) {
+            return m_buffer[indx];
+        }
 
-    friend std::istream& operator>>(std::istream& in, String& dst) {
-        constexpr size_t BUFFER_SIZE = 1024;
-        char temp[BUFFER_SIZE];
-        if(in.getline(temp, BUFFER_SIZE)) {
-            if(dst.m_buffer != nullptr) {
-                if(dst.m_size == 0) {
-                    delete dst.m_buffer;
-                }
-                else {
-                    delete[] dst.m_buffer;
+        char operator[](size_t indx) && noexcept(noexcept(indx < this->m_size)) {
+            return m_buffer[indx];
+        }
+
+        const bool operator<(const String& rhs) noexcept {
+            size_t min_size = this->m_size < rhs.m_size ? this->m_size : rhs.m_size;
+
+            for (size_t i = 0; i < min_size; ++i) {
+                if (this->m_buffer[i] < rhs.m_buffer[i]) {
+                    return true;
+                } else if (this->m_buffer[i] > rhs.m_buffer[i]) {
+                    return false;
                 }
             }
-            dst.m_buffer = new char[strlen(temp) + 1];
-            strcpy(dst.m_buffer, temp);
-            dst.m_size = strlen(temp);
+            return this->m_size < rhs.m_size;
         }
-        return in;
-    }
 
-    operator char*() &{
-        return m_buffer;
-    }
+        const bool operator<(const char* rhs) noexcept {
+            size_t min_size = this->m_size < strlen(rhs) ? this->m_size : strlen(rhs);
 
-    void* operator new(size_t size) {
-        std::lock_guard<std::mutex> lock(mut);
-
-        void *buffer = calloc(size, 1);
-
-        if(!buffer) { throw std::bad_alloc(); }
-        return buffer;
-    }
-
-    void* operator new(size_t size, const std::nothrow_t&) noexcept {
-        std::lock_guard<std::mutex> lock(mut);
-        void *buffer = calloc(size, 1);
-        return buffer;
-    }
-
-    void* operator new[](size_t size) {
-        std::lock_guard<std::mutex> lock(mut);
-        void* buffer = calloc(size, 1);
-        if(!buffer) { throw std::bad_alloc(); };
-        return buffer;
-    }
-
-    void* operator new[](size_t size, const std::nothrow_t&) noexcept {
-        std::lock_guard<std::mutex> lock(mut);
-        void* buffer = calloc(size, 1);
-        return buffer;
-    }
-
-    void operator delete(void* ptr) noexcept {
-        mut.lock();
-        if(ptr) {
-            free(ptr);
+            for (size_t i = 0; i < min_size; ++i) {
+                if (this->m_buffer[i] < rhs[i]) {
+                    return true;
+                } else if (this->m_buffer[i] > rhs[i]) {
+                    return false;
+                }
+            }
+            return this->m_size < strlen(rhs);
         }
-        mut.unlock();
-    }
 
-    void operator delete[](void* ptr) noexcept {
-        mut.unlock();
-        if(ptr) {
-            free(ptr);
+        bool operator==(const String& str) noexcept {
+            if (str.m_size != this->m_size) {
+                return false;
+            } else {
+                for (size_t i = 0; i < str.m_size; ++i) {
+                    if (this->m_buffer[i] != str.m_buffer[i]) { return false; }
+                }
+                return true;
+            }
         }
-        mut.lock();
-    }
 
-    ~String() {
-        m_size = 0;
-        delete[] m_buffer;
-    }
-};
+        bool operator==(const char* str) noexcept {
+            if (strlen(str) != this->m_size) {
+                return false;
+            } else {
+                for (size_t i = 0; i < this->m_size; ++i) {
+                    if (this->m_buffer[i] != str[i]) { return false; }
+                }
+                return true;
+            }
+        }
+
+        friend std::ostream &operator<<(std::ostream &out, const String& src) noexcept {
+            std::lock_guard<std::mutex> lock(mut);
+            out << src.m_buffer;
+            return out;
+        }
+
+        friend std::istream &operator>>(std::istream& in, String& dst) {
+            constexpr size_t BUFFER_SIZE = 1024;
+            char temp[BUFFER_SIZE];
+            if (in.getline(temp, BUFFER_SIZE)) {
+                if (dst.m_buffer != nullptr) {
+                    if (dst.m_size == 0) {
+                        delete dst.m_buffer;
+                    } else {
+                        delete[] dst.m_buffer;
+                    }
+                }
+                dst.m_buffer = new char[strlen(temp) + 1];
+                strcpy(dst.m_buffer, temp);
+                dst.m_size = strlen(temp);
+            }
+            return in;
+        }
+
+        operator char *() & {
+            return m_buffer;
+        }
+
+        void *operator new(size_t size) {
+            std::lock_guard<std::mutex> lock(mut);
+
+            void *buffer = calloc(size, 1);
+
+            if (!buffer) { throw std::bad_alloc(); }
+            return buffer;
+        }
+
+        void *operator new(size_t size, const std::nothrow_t&) noexcept {
+            std::lock_guard<std::mutex> lock(mut);
+            void *buffer = calloc(size, 1);
+            return buffer;
+        }
+
+        void *operator new[](size_t size) {
+            std::lock_guard<std::mutex> lock(mut);
+            void *buffer = calloc(size, 1);
+            if (!buffer) { throw std::bad_alloc(); };
+            return buffer;
+        }
+
+        void *operator new[](size_t size, const std::nothrow_t&) noexcept {
+            std::lock_guard<std::mutex> lock(mut);
+            void *buffer = calloc(size, 1);
+            return buffer;
+        }
+
+        void operator delete(void* ptr) noexcept {
+            mut.lock();
+            if (ptr) {
+                free(ptr);
+            }
+            mut.unlock();
+        }
+
+        void operator delete[](void* ptr) noexcept {
+            mut.unlock();
+            if (ptr) {
+                free(ptr);
+            }
+            mut.lock();
+        }
+
+        ~String() {
+            m_size = 0;
+            delete[] m_buffer;
+        }
+    };
+}

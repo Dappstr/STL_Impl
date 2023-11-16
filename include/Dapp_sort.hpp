@@ -1,4 +1,6 @@
-namespace Dapp {
+#pragma once
+
+namespace dapp {
     template<typename Iter>
 
     void sort(Iter start, Iter end) {
