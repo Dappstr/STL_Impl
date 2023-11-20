@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <cassert>
 
-namespace Dapp {
+namespace dapp {
     template<typename T, size_t N>
     class Array {
     private:

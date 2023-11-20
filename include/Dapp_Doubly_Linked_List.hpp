@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace Dapp {
+namespace dapp {
     template<typename T>
     struct Node {
         T m_value;

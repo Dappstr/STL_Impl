@@ -3,7 +3,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace Dapp {
+namespace dapp {
 #if __cplusplus == 202002L
 
     template <std::input_or_output_iterator InputIt, std::output_iterator<typename std::iterator_traits<InputIt>::value_type> OutputIt>

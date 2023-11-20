@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Dapp {
+namespace dapp {
     template<typename Iter, typename T>
     void iota(Iter start, Iter end, T val) {
         for (; start != end; ++start) {

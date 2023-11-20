@@ -3,7 +3,7 @@
 #include <type_traits>
 #include <iterator>
 
-namespace Dapp {
+namespace dapp {
     template<typename Iter, typename T,
             typename = std::enable_if_t<
                     std::is_arithmetic<T>::value &&
