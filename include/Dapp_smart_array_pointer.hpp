@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace Dapp {
+namespace dapp {
     template<typename T>
     class Smart_array_ptr {
         private:

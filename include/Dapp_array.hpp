@@ -1,7 +1,6 @@
 //A heap based implementation of std::array
 #pragma once
 
-#include <initializer_list>
 #include <iostream>
 #include <initializer_list>
 #include <type_traits>
@@ -17,24 +16,49 @@ namespace dapp {
     public:
         Array(std::initializer_list<T> lst)
                 : m_size(lst.size()) {
-            m_buffer = new T[m_size];
-
+            assert(lst.size() == N && "Error! Initializer list size must match size template argument!");
+            try {
+                m_buffer = new T[m_size];
+            }
+            catch(const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for array buffer: " << e.what();
+                exit(EXIT_FAILURE);
+            }
             for (size_t i = 0; i < m_size; ++i) {
                 m_buffer[i] = *(lst.begin() + i);
             }
         }
 
+        Array(const T(&arr)[N]) {
+            try {
+                m_buffer = new T[N];
+            }
+            catch(const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for array buffer: " << e.what();
+                exit(EXIT_FAILURE);
+            }
+
+            for(size_t i = 0; i < N; ++i) {
+                this->m_buffer[i] = arr[i];
+            }
+        }
+
         Array(const Array& src)
                 : m_size(src.m_size) {
-            m_buffer = new T[m_size];
-
+            try {
+                m_buffer = new T[m_size];
+            }
+            catch(const std::bad_alloc& e) {
+                std::cerr << "Error allocating memory for array buffer: " << e.what();
+                exit(EXIT_FAILURE);
+            }
             for (int i = 0; i < m_size; ++i) {
                 m_buffer[i] = src.m_buffer[i];
             }
         }
 
         //Utility functions
-        T at(size_t indx) noexcept(noexcept(indx > -1)) {
+        T at(const size_t indx) noexcept(noexcept(indx > -1)) {
             assert(indx < m_size);
 
             return m_buffer[indx];
