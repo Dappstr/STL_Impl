@@ -47,6 +47,17 @@ namespace dapp {
             }
         }
 
+        void print_list_reverse_recursively(size_t ll_size) {
+            if(ll_size == 0) { return; }
+
+            Node<T>* temp = m_head;
+            for(size_t i = 0; i < ll_size - 1; ++i) {
+                temp = temp->m_next;
+            }
+            std::cout << temp->m_value << ' ';
+            print_list_reverse_recursively(ll_size - 1);
+        }
+
         //We add a node onto the end of our linked list
         void append(T value) {
             Node<T>* new_node = new Node<T>(value);
