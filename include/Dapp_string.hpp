@@ -1,6 +1,3 @@
-#pragma once
-
-#include <iostream>
 #include <cstring> // This imports strlen and strcpy functions
 #include <utility> // std::move
 #include <cassert>
@@ -63,10 +60,12 @@ namespace dapp {
 
         String(std::initializer_list<const char *> init_list) {
             size_t total_str_size = 0;
-            // Calculate total size including null-terminators
+            // Calculate total size
             for (const auto& str: init_list) {
-                total_str_size += strlen(str) + 1;
+                total_str_size += strlen(str);
             }
+            //Null terminator
+            total_str_size += 1;
 
             // Allocate memory for the total size
             try {
@@ -130,7 +129,7 @@ namespace dapp {
             src.m_size = 0;
         }
 
-        inline const size_t size() noexcept { return m_size; }
+        inline const size_t size() noexcept { return m_size - 1; }
 
         inline const bool empty() noexcept { return m_size > 0 ? false : true; }
 
