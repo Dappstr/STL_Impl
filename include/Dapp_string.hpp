@@ -578,4 +578,8 @@ namespace dapp {
             delete[] m_buffer;
         }
     };
+
+    String operator "" _S(const char* p, size_t) {
+        return String{p};
+    }
 }
