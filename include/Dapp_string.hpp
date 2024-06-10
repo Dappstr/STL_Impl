@@ -440,8 +440,6 @@ namespace dapp {
             strcat(new_buffer, rhs.m_buffer);
 
             String new_string(new_buffer);
-
-            delete[] new_buffer;
             return new_string;
         }
 
