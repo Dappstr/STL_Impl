@@ -508,19 +508,35 @@ namespace dapp {
         friend std::istream &operator>>(std::istream& in, String& dst) {
             constexpr size_t BUFFER_SIZE = 1024;
             char temp[BUFFER_SIZE];
-            if (in.getline(temp, BUFFER_SIZE)) {
-                if (dst.m_buffer != nullptr) {
-                    if (dst.m_size == 0) {
-                        delete dst.m_buffer;
-                    } else {
-                        delete[] dst.m_buffer;
-                    }
-                }
-                dst.m_buffer = new char[strlen(temp) + 1];
-                strcpy(dst.m_buffer, temp);
-                dst.m_size = strlen(temp);
+
+            in >> temp;
+
+            if(dst.m_buffer != nullptr) {
+                delete[] dst.m_buffer;
             }
+            dst.m_buffer = new char[strlen(temp) + 1];
+            strcpy(dst.m_buffer, temp);
+            dst.m_size = strlen(temp) + 1;
             return in;
+        }
+
+        friend std::istream& getline(std::istream& in, String& str) {
+            constexpr size_t BUFFER_SIZE = 1024;
+            char temp[BUFFER_SIZE];
+            if(std::getline(is, temp, '\n')) {
+                std::lock_guard<std::mutex> lock(str.mut);
+                delete[] str.m_buffer;
+                try {
+                    str.m_buffer = new char[strlen(temp) + 1];
+                }
+                catch(const std::bad_alloc& e) {
+                    std::cerr << "Error allocating memory for string object: " << e.what();
+                    exit(EXIT_FAILURE);
+                }
+                strcpy(str.m_buffer, temp);
+                str.m_size = strlen(temp) + 1;
+            }
+            return is;
         }
 
         operator char *() & {
