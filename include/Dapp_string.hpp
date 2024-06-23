@@ -1,14 +1,16 @@
+#pragma once
 #include <cstring> // This imports strlen and strcpy functions
 #include <utility> // std::move
 #include <cassert>
 #include <stdlib.h>
 #include <mutex>
+#include <iostream>
 
 namespace dapp {
     class String {
     private:
         size_t m_size = 0;
-        char *m_buffer = nullptr;
+        char* m_buffer = nullptr;
         static const size_t npos = -1;
         inline static std::mutex mut;
 
@@ -27,7 +29,7 @@ namespace dapp {
         }
 
         String(const char* str)
-                : m_size(strlen(str)) {
+            : m_size(strlen(str)) {
             try {
                 m_buffer = new char[m_size + 1];
             }
@@ -40,7 +42,7 @@ namespace dapp {
         }
 
         String(std::initializer_list<char> init_list)
-                : m_size(init_list.size()) {
+            : m_size(init_list.size()) {
             try {
                 m_buffer = new char[m_size];
             }
@@ -51,17 +53,17 @@ namespace dapp {
 
             //std::copy(init_list.begin(), init_list.end(), m_buffer);
             size_t indx = 0;
-            for (const auto ch: init_list) {
+            for (const auto ch : init_list) {
                 m_buffer[indx] = ch;
                 ++indx;
             }
             m_buffer[m_size] = '\0';
         }
 
-        String(std::initializer_list<const char *> init_list) {
+        String(std::initializer_list<const char*> init_list) {
             size_t total_str_size = 0;
             // Calculate total size
-            for (const auto& str: init_list) {
+            for (const auto& str : init_list) {
                 total_str_size += strlen(str);
             }
             //Null terminator
@@ -80,14 +82,14 @@ namespace dapp {
 
             // Concatenate strings
             char* buffer_ptr = m_buffer;  // Pointer to the current position in m_buffer
-            for (const auto &str: init_list) {
+            for (const auto& str : init_list) {
                 strcpy(buffer_ptr, str);
                 buffer_ptr += strlen(str);
             }
         }
 
         explicit String(const size_t sz, const char c)
-                : m_size(sz) {
+            : m_size(sz) {
             try {
                 m_buffer = new char[m_size];
             }
@@ -103,8 +105,8 @@ namespace dapp {
         }
 
         //Copy constructor
-        String(const String &src)
-                : m_size(src.m_size) {
+        String(const String& src)
+            : m_size(src.m_size) {
             try {
                 m_buffer = new char[m_size];
 
@@ -119,7 +121,7 @@ namespace dapp {
 
         //Move constructor
         String(String&& src)
-                : m_size(std::move(src.m_size)) {
+            : m_size(std::move(src.m_size)) {
             m_buffer = std::move(src.m_buffer);
 
             //We set the source string to have no value.
@@ -164,7 +166,7 @@ namespace dapp {
             std::lock_guard<std::mutex> lock(mut);
 
             size_t new_size = m_size + strlen(s) + 1;
-            char *new_buffer;
+            char* new_buffer;
             try {
                 new_buffer = new char[new_size + 1];
             }
@@ -183,7 +185,7 @@ namespace dapp {
             try {
                 m_buffer = new char[new_size];
             }
-            catch (const std::bad_alloc &e) {
+            catch (const std::bad_alloc& e) {
                 std::cerr << "Error allocating memory for string object: " << e.what();
                 exit(EXIT_FAILURE);
             }
@@ -198,7 +200,7 @@ namespace dapp {
             std::lock_guard<std::mutex> lock(mut);
 
             size_t new_size = m_size + strlen(src.m_buffer);
-            char *new_buffer;
+            char* new_buffer;
             try {
                 new_buffer = new char[new_size + 1];
             }
@@ -224,11 +226,11 @@ namespace dapp {
             std::lock_guard<std::mutex> lock(mut);
 
             size_t new_size = m_size + strlen(s);
-            char *new_buffer;
+            char* new_buffer;
             try {
                 new_buffer = new char[new_size + 1];
             }
-            catch (const std::bad_alloc &e) {
+            catch (const std::bad_alloc& e) {
                 std::cerr << "Error allocating memory for string object: " << e.what();
                 exit(EXIT_FAILURE);
             }
@@ -258,7 +260,7 @@ namespace dapp {
             std::lock_guard<std::mutex> lock(mut);
 
             size_t new_size = m_size + s.m_size;
-            char *new_buffer;
+            char* new_buffer;
             try {
                 new_buffer = new char[new_size + 1];
             }
@@ -285,7 +287,7 @@ namespace dapp {
             assert(pos + len <= m_size && "Length must be less than or equal to the string length");
 
             size_t new_size = m_size - len;
-            char *new_buffer;
+            char* new_buffer;
             try {
                 new_buffer = new char[new_size + 1];
             }
@@ -296,7 +298,7 @@ namespace dapp {
 
             strncpy(new_buffer, m_buffer, pos); // Copy characters up to (not including) `pos`
             strcpy(new_buffer + pos,
-                   m_buffer + pos + len); //Then copy the characters starting at pos, then up to length
+                m_buffer + pos + len); //Then copy the characters starting at pos, then up to length
 
             delete[] m_buffer;
             m_size = new_size;
@@ -332,7 +334,7 @@ namespace dapp {
         }
 
         size_t find(const char* s, size_t pos = 0) const {
-            size_t s_len = strlen(s);
+            const size_t s_len = strlen(s);
 
             if (m_size < s_len) {
                 return npos;
@@ -342,13 +344,15 @@ namespace dapp {
                 char first_char = s[0];
                 for (size_t i = pos; i < m_size; ++i) {
                     if (m_buffer[i] == first_char) {
-                        char str_cmp[s_len + 1]; // Char array used for comparison
+                        char* str_cmp = new char[s_len + 1]; // Char array used for comparison
                         strncpy(str_cmp, this->m_buffer + i, s_len);
                         str_cmp[s_len] = '\0';
 
                         if (strcmp(str_cmp, s) == 0) {
+                            delete[] str_cmp;
                             return i;
                         }
+                        delete[] str_cmp;
                     }
                 }
             }
@@ -358,16 +362,16 @@ namespace dapp {
         String substr(size_t pos = 0, size_t len = npos) const {
             assert(pos <= this->m_size && " substr pos cannot be greater than size");
 
-            char *sub_str;
+            char* sub_str;
             try {
                 sub_str = new char[len + 1];
             }
-            catch (const std::bad_alloc &e) {
+            catch (const std::bad_alloc& e) {
                 std::cerr << "Error allocating memory for string object: " << e.what();
                 exit(EXIT_FAILURE);
             }
 
-            sub_str = (char *) memcpy(sub_str, this->m_buffer + pos, len);
+            sub_str = (char*)memcpy(sub_str, this->m_buffer + pos, len);
             sub_str[len] = '\0';
 
             String ret_str(sub_str);
@@ -377,7 +381,7 @@ namespace dapp {
 
 
         //Operators
-        String &operator=(const String& rhs) {
+        String& operator=(const String& rhs) {
             std::lock_guard<std::mutex> lock(mut);
 
             if (this == &rhs) { return *this; }
@@ -392,7 +396,7 @@ namespace dapp {
             return *this;
         }
 
-        String &operator=(String&& rhs) noexcept {
+        String& operator=(String&& rhs) noexcept {
             std::lock_guard<std::mutex> lock(mut);
 
             if (this == &rhs) { return *this; }
@@ -409,7 +413,7 @@ namespace dapp {
 
         String operator+(const char* rhs) {
             size_t new_size = m_size + strlen(rhs) + 1;
-            char *new_buffer;
+            char* new_buffer;
             try {
                 new_buffer = new char[new_size];
             }
@@ -427,7 +431,7 @@ namespace dapp {
 
         String operator+(const String& rhs) {
             size_t size = m_size + rhs.m_size + 1;
-            char *new_buffer;
+            char* new_buffer;
             try {
                 new_buffer = new char[size];
             }
@@ -443,7 +447,7 @@ namespace dapp {
             return new_string;
         }
 
-        char &operator[](size_t indx) & noexcept(noexcept(indx < this->m_size)) {
+        char& operator[](size_t indx) & noexcept(noexcept(indx < this->m_size)) {
             return m_buffer[indx];
         }
 
@@ -457,7 +461,8 @@ namespace dapp {
             for (size_t i = 0; i < min_size; ++i) {
                 if (this->m_buffer[i] < rhs.m_buffer[i]) {
                     return true;
-                } else if (this->m_buffer[i] > rhs.m_buffer[i]) {
+                }
+                else if (this->m_buffer[i] > rhs.m_buffer[i]) {
                     return false;
                 }
             }
@@ -470,7 +475,8 @@ namespace dapp {
             for (size_t i = 0; i < min_size; ++i) {
                 if (this->m_buffer[i] < rhs[i]) {
                     return true;
-                } else if (this->m_buffer[i] > rhs[i]) {
+                }
+                else if (this->m_buffer[i] > rhs[i]) {
                     return false;
                 }
             }
@@ -480,7 +486,8 @@ namespace dapp {
         bool operator==(const String& str) noexcept {
             if (str.m_size != this->m_size) {
                 return false;
-            } else {
+            }
+            else {
                 for (size_t i = 0; i < str.m_size; ++i) {
                     if (this->m_buffer[i] != str.m_buffer[i]) { return false; }
                 }
@@ -491,7 +498,8 @@ namespace dapp {
         bool operator==(const char* str) noexcept {
             if (strlen(str) != this->m_size) {
                 return false;
-            } else {
+            }
+            else {
                 for (size_t i = 0; i < this->m_size; ++i) {
                     if (this->m_buffer[i] != str[i]) { return false; }
                 }
@@ -499,19 +507,19 @@ namespace dapp {
             }
         }
 
-        friend std::ostream &operator<<(std::ostream &out, const String& src) noexcept {
+        friend std::ostream& operator<<(std::ostream& out, const String& src) noexcept {
             std::lock_guard<std::mutex> lock(mut);
             out << src.m_buffer;
             return out;
         }
 
-        friend std::istream &operator>>(std::istream& in, String& dst) {
+        friend std::istream& operator>>(std::istream& in, String& dst) {
             constexpr size_t BUFFER_SIZE = 1024;
             char temp[BUFFER_SIZE];
 
             in >> temp;
 
-            if(dst.m_buffer != nullptr) {
+            if (dst.m_buffer != nullptr) {
                 delete[] dst.m_buffer;
             }
             dst.m_buffer = new char[strlen(temp) + 1];
@@ -523,51 +531,51 @@ namespace dapp {
         friend std::istream& getline(std::istream& in, String& str) {
             constexpr size_t BUFFER_SIZE = 1024;
             char temp[BUFFER_SIZE];
-            if(std::getline(is, temp, '\n')) {
+            if (in.getline(temp, '\n')) {
                 std::lock_guard<std::mutex> lock(str.mut);
                 delete[] str.m_buffer;
                 try {
                     str.m_buffer = new char[strlen(temp) + 1];
                 }
-                catch(const std::bad_alloc& e) {
+                catch (const std::bad_alloc& e) {
                     std::cerr << "Error allocating memory for string object: " << e.what();
                     exit(EXIT_FAILURE);
                 }
                 strcpy(str.m_buffer, temp);
                 str.m_size = strlen(temp) + 1;
             }
-            return is;
+            return in;
         }
 
-        operator char *() & {
+        operator char* ()& {
             return m_buffer;
         }
 
-        void *operator new(size_t size) {
+        void* operator new(size_t size) {
             std::lock_guard<std::mutex> lock(mut);
 
-            void *buffer = calloc(size, 1);
+            void* buffer = calloc(size, 1);
 
             if (!buffer) { throw std::bad_alloc(); }
             return buffer;
         }
 
-        void *operator new(size_t size, const std::nothrow_t&) noexcept {
+        void* operator new(size_t size, const std::nothrow_t&) noexcept {
             std::lock_guard<std::mutex> lock(mut);
-            void *buffer = calloc(size, 1);
+            void* buffer = calloc(size, 1);
             return buffer;
         }
 
-        void *operator new[](size_t size) {
+        void* operator new[](size_t size) {
             std::lock_guard<std::mutex> lock(mut);
-            void *buffer = calloc(size, 1);
+            void* buffer = calloc(size, 1);
             if (!buffer) { throw std::bad_alloc(); };
             return buffer;
         }
 
-        void *operator new[](size_t size, const std::nothrow_t&) noexcept {
+        void* operator new[](size_t size, const std::nothrow_t&) noexcept {
             std::lock_guard<std::mutex> lock(mut);
-            void *buffer = calloc(size, 1);
+            void* buffer = calloc(size, 1);
             return buffer;
         }
 
@@ -594,6 +602,6 @@ namespace dapp {
     };
 
     String operator "" _S(const char* p, size_t) {
-        return String{p};
+        return String{ p };
     }
 }
