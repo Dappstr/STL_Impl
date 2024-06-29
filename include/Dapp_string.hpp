@@ -519,7 +519,15 @@ namespace dapp {
             dst.m_size = strlen(temp) + 1;
             return in;
         }
-
+        
+        /*
+            Example:
+            std::fstream file("example.txt")
+            String line;
+            while(getline(file, line)) {
+                ...
+            }
+        */
         friend std::istream& getline(std::istream& in, String& str) {
             constexpr size_t BUFFER_SIZE = 1024;
             char temp[BUFFER_SIZE];
