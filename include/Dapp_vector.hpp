@@ -5,7 +5,6 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
-#include <stdlib.h>
 #include <mutex>
 
 namespace dapp {
@@ -104,7 +103,7 @@ namespace dapp {
 
         //Resize the current buffer
         void resize(const size_t n) {
-            assert(n >= 0 && "Cannot resize vector to size less than 0");
+            //assert(n >= 0 && "Cannot resize vector to size less than 0");
 
             if (n == 0) {
                 delete[] m_buffer;
