@@ -4,7 +4,7 @@ String: **Done**
 
 Stack: **Done**
 
-Vector: **Done**
+Vector: **Need to rework**
 
 Linked List: **Done**
 
@@ -19,6 +19,10 @@ accumulate: **Done**
 for_each: **Done**
 
 remove: **Done**
+
+erase: **Done**
+
+erase_if: **Done**
 
 remove_if: **Done**
 

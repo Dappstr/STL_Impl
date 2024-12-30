@@ -14,6 +14,40 @@ namespace dapp {
         return d_first;
     }
 
+    template <typename Ctr, typename T>
+    size_t erase(Ctr& c, const T& value) {
+        size_t removed_count = 0;
+
+        auto it = c.begin();
+        while (it != c.end()) {
+            if (*it == value) {
+                it = c.erase(it);
+                ++removed_count;
+            } else {
+                ++it;
+            }
+        }
+
+        return removed_count;
+    }
+
+    template <typename Ctr, typename Pred>
+    size_t erase_if(Ctr& c, Pred pred) {
+        size_t removed_count = 0;
+
+        auto it = c.begin();
+        while (it != c.end()) {
+            if (pred(*it)) {
+                it = c.erase(it);
+                ++removed_count;
+            } else {
+                ++it;
+            }
+        }
+
+        return removed_count;
+    }
+
     template<typename Iter, typename T>
     void fill(Iter start, Iter end, const T& initvalue) {
         for(; start != end; ++initvalue) {
@@ -23,7 +57,7 @@ namespace dapp {
 
     template<typename Iter, typename Size, typename T>
     Iter fill_n(Iter start, const Size count, const T& value) {
-        for(Size i = 0; i < count; ++i, ++beg) {
+        for(Size i = 0; i < count; ++i, ++start) {
             *start = value;
         }
         return start;
