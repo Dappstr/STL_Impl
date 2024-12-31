@@ -20,7 +20,6 @@ namespace dapp {
 
         // Constructors
         Vector() {
-
             try {
                 m_buffer = new T;
             }
@@ -28,16 +27,14 @@ namespace dapp {
                 std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
                 exit(EXIT_FAILURE);
             }
-
             //Set the initial size to be 0 and the capacity will be an optional template argument
             m_size = 0;
-            m_cap = 0;
+            m_cap = 1;
         }
 
         Vector(const Vector& v) {
             m_size = v.m_size;
             m_cap = v.m_cap;
-
             try {
                 m_buffer = new T[m_cap];
                 std::copy(v.m_buffer, v.m_buffer + m_size, m_buffer);
@@ -49,15 +46,15 @@ namespace dapp {
         }
 
         Vector(Vector&& v) noexcept {
-            m_cap = std::move(v.m_cap);
-            m_size = std::move(v.m_size);
+            m_cap = v.m_cap;
+            m_size = v.m_size;
 
             for (int i = 0; i < m_size; ++i) {
                 this->m_buffer[i] = std::move(v.m_buffer[i]);
             }
         }
 
-        Vector(const size_t n) {
+        explicit Vector(const size_t n) {
             try {
                 m_buffer = new T[n];
                 m_size = 0;
@@ -139,37 +136,24 @@ namespace dapp {
         //Append a value to the buffer
         void append(const T& val) {
             mtx.lock();
-
-            //We check if the current size is at the current capacity
-            //If it is, we need to allocate a new larger buffer for the new element
             if (m_size == m_cap) {
-                size_t new_size = m_size + 1;
-
-                //Create the new buffer
-                T *new_buff = new T[new_size];
-
-                //Copy over contents from old buffer (m_buffer) to the new temporary one
-                memcpy(new_buff, m_buffer, m_size * sizeof(T));
-
-                //Assign the new element to its value
-                new_buff[new_size - 1] = val;
-
-                //Delete the current_buffer
-                delete[] m_buffer;
-
-                //Increase the size and transfer ownership to the new buffer
-                m_size = new_size;
-                m_cap = new_size;
-                m_buffer = std::move(new_buff);
-            } else {
-                m_buffer[m_size] = val;
-                ++m_size;
+                const size_t new_cap = (m_cap == 0) ? 1 : m_cap * 2;
+                try {
+                    T *new_buffer = new T[new_cap];
+                    memcpy(new_buffer, m_buffer, m_size * sizeof(T));
+                    delete[] m_buffer;
+                    m_buffer = new_buffer;
+                    m_cap = new_cap;
+                } catch (const std::bad_alloc& e) {
+                    std::cerr << "Error allocating memory in " << __func__ << ": " << e.what();
+                    exit(EXIT_FAILURE);
+                }
             }
+            m_buffer[m_size++] = val;
             mtx.unlock();
         }
 
         void fill(const T& val) {
-            //memset(m_buffer, val, sizeof(val) * this->m_cap);
             for (int i = 0; i < m_cap; ++i) {
                 this->m_buffer[i] = val;
             }
@@ -177,7 +161,7 @@ namespace dapp {
         }
 
         // Return the value at the given index
-        T at(size_t indx) noexcept {
+        T at(const size_t indx) noexcept {
             assert(indx <= m_size);
             return *(&m_buffer[indx]);
         }
@@ -195,12 +179,11 @@ namespace dapp {
 
         // Returns a pointer to the end of the buffer
         decltype(auto) end() noexcept(noexcept(this->m_size > 0)) {
-            assert(m_size >= 0);
             return m_buffer + m_size;
         }
 
         // Return the capacity of the buffer
-        inline const size_t capacity() noexcept { return m_cap; } // Will return maximum current capacity
+        inline size_t capacity() const noexcept { return m_cap; } // Will return maximum current capacity
 
         // Will clear the contents of the buffer and return a buffer with the previous contents
         Vector<T> clear() {
@@ -213,7 +196,7 @@ namespace dapp {
         }
 
         // Returns whether the buffer is empty or not
-        inline const bool empty() noexcept { return m_size > 0; }
+        inline bool empty() const noexcept { return m_size > 0; }
 
         // Returns the last element and then reduces the size while preserving the capacity
         decltype(auto) pop() {
@@ -222,9 +205,8 @@ namespace dapp {
             --m_size;
 
             if (m_size > 0) {
-                T *new_buffer;
                 try {
-                    new_buffer = new T[m_size];
+                    T *new_buffer = new T[m_size];
                     memcpy(new_buffer, m_buffer, m_size * sizeof(T));
                     delete[] m_buffer;
                     m_buffer = new_buffer;
@@ -242,9 +224,8 @@ namespace dapp {
             assert(n > 0 && "Shrink value must be greater than 0");
             assert(n < this->m_size && "Shrink value must be less than current size");
 
-            T *new_buff;
             try {
-                new_buff = new T[n];
+                T *new_buff = new T[n];
 
                 memcpy(new_buff, this->m_buffer, n);
 
@@ -260,25 +241,29 @@ namespace dapp {
         }
 
         // Returns size of the buffer
-        inline const size_t size() & { return m_size; } // Will return current size
-        inline const size_t size() && { return m_size; } // Will return current size
+        inline size_t size() const & { return m_size; } // Will return current size
+        inline size_t size() const && { return m_size; } // Will return current size
 
         // Operators
         Vector<T> &operator=(const Vector<T>& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
-            this->m_size = rhs.m_size;
-            this->m_cap = rhs.m_cap;
+            if (*this == &rhs) {
+                return *this;
+            } else {
+                this->m_size = rhs.m_size;
+                this->m_cap = rhs.m_cap;
 
-            delete[] m_buffer;
-            this->m_buffer = new T[this->m_cap];
+                delete[] m_buffer;
+                this->m_buffer = new T[this->m_cap];
 
-            memcpy(this->m_buffer, rhs.m_buffer, this->m_size);
+                memcpy(this->m_buffer, rhs.m_buffer, this->m_size);
 
-            return *this;
+                return *this;
+            }
         }
 
         Vector<T> &operator=(Vector<T>&& rhs) noexcept(noexcept(rhs.m_cap > -1)) {
-            this->m_cap = std::move(rhs.m_cap);
-            this->m_size = std::move(rhs.m_size);
+            this->m_cap = rhs.m_cap;
+            this->m_size = rhs.m_size;
 
 
             delete[] this->m_buffer;
@@ -327,7 +312,7 @@ namespace dapp {
         }
 
         friend std::ostream& operator<<(std::ostream &out, const Vector<T>& vec) {
-            for (int i = 0; i < vec.m_cap; ++i) {
+            for (int i = 0; i < vec.m_size; ++i) {
                 out << vec.m_buffer[i] << ' ';
             }
             return out;
