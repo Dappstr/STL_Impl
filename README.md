@@ -33,6 +33,6 @@ This is my own personal project.
 
 ### In Progress:
 
-Nothing at the moment, will inform if I do.
+* Nothing at the moment, will inform if I do.
 
 
